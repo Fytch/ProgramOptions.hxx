@@ -199,11 +199,11 @@ In this example, we will employ already known mechanics but lay the focus on the
 - For an option of type `po::f64`, the possible parameters of a callback are: <*none*>, `std::string`, `po::f64_t`, or any type that is implicitly constructible from these.
 - When using C++14, using `auto&&` as a callback's parameter is also possible.
 
-#### About fallbacks:
+#### About `.fallback(...)`:
 - They can be provided in any form that would also suffice when parsed, e.g. as a `std::string`.
 - If `.multi()` is set, `.fallback(...)` can take an arbitrary number of values.
 
-#### About `.type()`:
+#### About `.type(...)`:
 - `po::void_`: No value, the option either occurred or not
 - `po::string`: Unaltered string
 - `po::i32` / `po::i64`: Signed integer; supports hexadecimal (*0x*), binary (*0b*) and positive exponents (*e0*)
@@ -211,9 +211,9 @@ In this example, we will employ already known mechanics but lay the focus on the
 - `po::f32` / `po::f64`: Floating point value; supports exponents (*e0*), infinities (*inf*) and NaNs (*nan*)
 
 #### Reading `.multi()` options:
-- `.[c][r]begin()` and `.[c][r]end()`: Iterators to `po::value`s, thus you have to choose the right member when dereferencing, e.g. `.begin()->i32`
-- `.[c][r]begin< po::i32 >()` and `.[c][r]end< po::i32 >()`: Iterators to the specified type
-- `.get( i )` and `.size()`: Reference to `po::value`s; there's also a `.get_or( i, v )` method, returning the second parameter if the index is out of range
+- `.begin()` and `.end()`: Iterators that point to `po::value`s; thus you have to choose the right member when dereferencing, e.g. `.begin()->i32`
+- `.begin< po::i32 >()` and `.end< po::i32 >()`: Iterators that point to values of the specified type
+- `.get( i )` (and `.size()`): Reference to `po::value`; there's also a `.get_or( i, v )` method, returning the second parameter if the index is out of range
 - `.to_vector< po::i32 >()`: Returns a `std::vector` with elements of the specified type
 
 ```cpp
