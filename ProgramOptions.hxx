@@ -1238,6 +1238,9 @@ namespace po {
 			m_abbreviation = value;
 			return *this;
 		}
+		option& no_abbreviation() {
+			return abbreviation( '\0' );
+		}
 		char get_abbreviation() const {
 			return m_abbreviation;
 		}
@@ -1351,6 +1354,10 @@ namespace po {
 				fallback_multi( std::forward< args_t >( args )... );
 			return *this;
 		}
+		option& no_fallback() {
+			m_fallback = nullptr;
+			return *this;
+		}
 
 		template< typename invocable_t >
 		option& callback( invocable_t&& invocable ) {
@@ -1387,6 +1394,10 @@ namespace po {
 			ProgramOptions_assert( new_callback->good(), "callback: incompatible parameter type" );
 #endif // ProgramOptions_debug
 			m_callbacks.emplace_back( std::move( new_callback ) );
+			return *this;
+		}
+		option& no_callback() {
+			m_callbacks.clear();
 			return *this;
 		}
 
