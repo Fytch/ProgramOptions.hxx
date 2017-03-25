@@ -74,7 +74,7 @@ Let's expand on the previous code. We want it to assume a certain value for the 
 
 Furthermore, we want to implement the option `-I` to let the user specify include paths. Paths should not be converted to any arithmetic type so we simply set the type to `po::string`.
 
-By calling the method `.multi()` we're telling the library to store *all* values, not just the last one. The number of arguments can be retrieved by calling the `.size()` or the `.count()` method. The individual values may be read by means of the iterators returned by `.begin()` and `.end()`. Bear in mind that these iterators point to instances of `po::value`s, so you still need to refer to the member `.string`. One way of avoiding this is to directly use the iterators provided by `.begin<po::string>()` and `.end<po::string>()`. These random-access iterators behave as if they pointed to instances of `std::string`s. For more information, refer to [Example 4](#example-4-more-callbacks-more-fallbacks-f64-to_vector).
+By calling the method `.multi()` we're telling the library to store *all* values, not just the last one. The number of arguments can be retrieved by calling the `.size()` or the `.count()` method. The individual values may be read by means of the iterators returned by `.begin()` and `.end()`. Bear in mind that these iterators point to instances of `po::value`s, so you still need to refer to the member `.string`. One way of avoiding this is to directly use the iterators provided by `.begin<po::string>()` and `.end<po::string>()`. These random-access iterators behave as if they pointed to instances of `std::string`s. For more information, refer to [Example 4](#reading-multi-options).
 
 ```cpp
 #include <ProgramOptions.hxx>
@@ -100,7 +100,7 @@ int main( int argc, char** argv ) {
 
     auto&& I = parser[ "include-path" ];
     // .size() and .count() return the number of given arguments. Without .multi(), their return value is always <= 1.
-    std::cout << "included paths (" << I.size() << "):\n";
+    std::cout << "include paths (" << I.size() << "):\n";
     // Here, the non-template .begin() / .end() methods were used. Their value type is po::value,
     // which is not a value in itself but contains the desired values as members, i.e. i.string.
     for( auto&& i : I )
@@ -111,7 +111,7 @@ In action:
 ```
 > ./include.exe -I/usr/include/foo -I "/usr/include/bar" -O3
 optimization level (manual) = 3
-included paths (2):
+include paths (2):
         /usr/include/foo
         /usr/include/bar
 ```
@@ -120,7 +120,7 @@ Up until now, we were missing the infamous `--help` command. While *ProgramOptio
 
 But how do we accomplish printing the options whenever there's a `--help` command? This is where callbacks come into play. Callbacks are functions that we supply to *ProgramOptions.hxx* to call. After we handed them over, we don't need to worry about invoking them as that's entirely *ProgramOptions.hxx*' job. In the code below, we pass a [lambda](http://en.cppreference.com/w/cpp/language/lambda) whose sole purpose is to print the options. Whenever the corresponding option occurs (`--help` in this case), the callback is invoked.
 
-The *unnamed parameter* `""` is used to process nameless arguments. Consider the command line: `gcc -O2 a.c b.c` Here, `a.c` and `b.c` are, unlike `-O2`, not named and neither do they start with a hyphen. They are unnamed parameters but they are important nevertheless. In *ProgramOptions.hxx*, you'd treat them like any other option. They only differ in their [default settings](#defaults).
+The *unnamed parameter* `""` is used to process nameless arguments. Consider the command line: `gcc -O2 a.c b.c` Here, unlike `-O2`, `a.c` and `b.c` are not named and neither do they start with a hyphen. They are unnamed parameters but they are important nevertheless. In *ProgramOptions.hxx*, you'd treat them like any other option. They only differ in their [default settings](#defaults).
 ```cpp
 #include <ProgramOptions.hxx>
 #include <iostream>
@@ -166,7 +166,7 @@ int main( int argc, char** argv ) {
     std::cout << "optimization level (" << ( O.was_set() ? "manual" : "auto" ) << ") = " << O.get().u32 << '\n';
 
     auto&& I = parser[ "include-path" ];
-    std::cout << "included paths (" << I.size() << "):\n";
+    std::cout << "include paths (" << I.size() << "):\n";
     for( auto&& i : I )
         std::cout << '\t' << i.string << '\n';
 }
@@ -188,27 +188,29 @@ processed 'foo.cxx' successfully!
 processed 'bar.cxx' successfully!
 processed files: 2
 optimization level (manual) = 3
-included paths (1):
+include paths (1):
         ./include
 ```
 ## Example 4 (more `callback`s, more `fallback`s, `f64`, `to_vector`)
-In this example, we will employ already known mechanics but lay the focus on their versatility. Let's start with callbacks:
+In this example, we will employ already known mechanics but lay the focus on their versatility.
+
+#### Let's start with callbacks:
 - Multiple callbacks are invoked in order of their addition.
 - For an option of type `po::f64`, the possible parameters of a callback are: <*none*>, `std::string`, `po::f64_t`, or any type that is implicitly constructible from these.
 - When using C++14, using `auto&&` as a callback's parameter is also possible.
 
-About fallbacks:
+#### About fallbacks:
 - They can be provided in any form that would also suffice when parsed, e.g. as a `std::string`.
-- If `.is_multi()`, `.fallback(...)` can take an arbitrary number of values.
+- If `.multi()` is set, `.fallback(...)` can take an arbitrary number of values.
 
-About `.type()`:
-- `po::void_`: No value, either occurred or not
+#### About `.type()`:
+- `po::void_`: No value, the option either occurred or not
 - `po::string`: Unaltered string
 - `po::i32` / `po::i64`: Signed integer; supports hexadecimal (*0x*), binary (*0b*) and positive exponents (*e0*)
 - `po::u32` / `po::u64`: Unsigned integer; same as with signed integers
 - `po::f32` / `po::f64`: Floating point value; supports exponents (*e0*), infinities (*inf*) and NaNs (*nan*)
 
-Reading `.multi()` options:
+#### Reading `.multi()` options:
 - `.[c][r]begin()` and `.[c][r]end()`: Iterators to `po::value`s, thus you have to choose the right member when dereferencing, e.g. `.begin()->i32`
 - `.[c][r]begin< po::i32 >()` and `.[c][r]end< po::i32 >()`: Iterators to the specified type
 - `.get( i )` and `.size()`: Reference to `po::value`s; there's also a `.get_or( i, v )` method, returning the second parameter if the index is out of range
@@ -276,16 +278,16 @@ This small table helps clarifying the defaults for the different kinds of option
 All flags have to be `#define`d before including *ProgramOptions.hxx*. Different translation units may include *ProgramOptions.hxx* using different flags.
 
 ### `#define ProgramOptions_silent`
-Suppresses all communication via `stderr`. Without this flags, *ProgramOptions.hxx* notifies the user in case of warnings or errors occurring.
+Suppresses all communication via `stderr`. Without this flags, *ProgramOptions.hxx* notifies the user in case of warnings or errors occurring while parsing. For instance, if an option requires an argument of type `i32` and it couldn't be parsed or wasn't provided at all, *ProgramOptions.hxx* would print a warning that the option must have an argument and that it hence was ignored.
 
 ### `#define ProgramOptions_no_exceptions`
 Disables all exceptions and thus allows compilation with `-fno-exceptions`. However, incorrect use of the library and unmet preconditions entail `abort()` via `assert(...)`. This flag is implied by `NDEBUG`.
 
 ### `#define NDEBUG`
-Disables all runtime checks and all exceptions. Incorrect use of the library and unmet preconditions will lead to undefined behaviour.
+Disables all runtime checks and all exceptions. Incorrect use of the library and unmet preconditions will lead to undefined behaviour. Implies `#define ProgramOptions_no_exceptions`.
 
 # Third-party libraries
-- [**Catch**](https://github.com/philsquared/Catch) for unit testing
+- [**Catch**](https://github.com/philsquared/Catch) for unit testing.
 
 # License
 *ProgramOptions.hxx* is published under the [MIT License](https://tldrlegal.com/license/mit-license). See the enclosed LICENSE.txt for more information.

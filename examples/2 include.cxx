@@ -21,7 +21,7 @@ int main( int argc, char** argv ) {
 
 	auto&& I = parser[ "include-path" ];
 	// .size() and .count() return the number of given arguments. Without .multi(), their return value is always <= 1.
-	std::cout << "included paths (" << I.size() << "):\n";
+	std::cout << "include paths (" << I.size() << "):\n";
 	// Here, the non-template .begin() / .end() methods were used. Their value type is po::value,
 	// which is not a value in itself but contains the desired values as members, i.e. i.string.
 	for( auto&& i : I )
