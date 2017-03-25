@@ -103,4 +103,14 @@ TEST_CASE( "exceptions", "[ProgramOptions]" ) {
 #undef SecondStage1
 #undef SecondStage2
 	}
+	SECTION( "reconfiguring options after parsing" ) {
+		const arg_provider A {
+			"/Test"
+		};
+		CHECK( parser( A.argc, A.argv ) );
+		CHECK_THROWS_AS( a.type( po::void_ ), std::logic_error );
+		CHECK_THROWS_AS( a.multi(), std::logic_error );
+		CHECK_THROWS_AS( bc.type( po::u64 ), std::logic_error );
+		CHECK_THROWS_AS( bc.single(), std::logic_error );
+	}
 }
