@@ -1,0 +1,291 @@
+# Contents
+- [Getting started](#getting-started)
+- [Design goals](#design-goals)
+- [Integration](#integration)
+- [Usage](#usage)
+  - [Example 1 (`abbreviation`, `u32`, `available`, `get`)](#example-1-abbreviation-u32-available-get)
+  - [Example 2 (`fallback`, `was_set`, `string`, `multi`)](#example-2-fallback-was_set-string-multi)
+  - [Example 3 (`description`, `callback`, unnamed parameter)](#example-3-description-callback-unnamed-parameter)
+  - [Example 4 (more `callback`s, more `fallback`s, `f64`, `to_vector`)](#example-4-more-callbacks-more-fallbacks-f64-to_vector)
+- [Defaults](#defaults)
+- [Flags](#flags)
+- [Third-party libraries](#third-party-libraries)
+- [License](#license)
+
+# Getting started
+It is highly recommended that you at least briefly skim through the chapters [**Integration**](#integration) and [**Usage**](#usage) before starting.
+
+The fastest way to get started is to download *ProgramOptions.hxx* as well as one of the templates and go from there.
+
+### `template.cxx`
+The default choice. Using *ProgramOptions.hxx* incorrectly or failing to meet a function's preconditions will throw an exception which will, by default, terminate the program and display a useful message, explaining exactly where things went wrong. If you don't want the program to be terminated, you may provide your own `try` and `catch` blocks to deal with exceptions.
+
+### `template_noexcept.cxx`
+Using this template is only recommended if you are already somewhat familiar with *ProgramOptions.hxx*. Incorrect programs will crash without any messages unless your STL implementation does so when `assert`ions fail.
+
+# Design goals
+- **Non-intrusive**. Unlike other program option libraries, such as *Boost.Program_options*, *ProgramOptions.hxx* requires neither additional library binaries nor integration into the build process. Just drop in the header, include it and you're all set. *ProgramOptions.hxx* doesn't force you to enable exceptions or RTTI and runs just fine with `-fno-rtti -fno-exceptions` (the latter requires you to [`#define ProgramOptions_no_exceptions`](#define-programoptions_noexceptions) prior to including the header, though).
+- **Intuitive**. *ProgramOptions.hxx* is designed to feel smooth and blend in well with other modern C++11 code.
+- **Correct**. Extensive unit tests and runtime checks contribute to more correct software, both on the side of the user and the developer of *ProgramOptions.hxx*.
+- **Permissive**. The [MIT License](https://tldrlegal.com/license/mit-license) under which *ProgramOptions.hxx* is published grants unrestricted freedom.
+
+# Integration
+*ProgramOptions.hxx* is very easy to integrate. After downloading the header file, all that it takes is a simple:
+```cpp
+#include "ProgramOptions.hxx"
+```
+Don't forget to compile with C++11 enabled, i.e. with `-std=c++11`.
+# Usage
+Using *ProgramOptions.hxx* is straightforward; we'll explain it by means of examples. All examples shown here and more can be found in the `examples` directory, all of which are well-documented.
+## Example 1 (`abbreviation`, `u32`, `available`, `get`)
+The following is the complete source code for a simple program expecting an integral optimization level.
+```cpp
+#include <ProgramOptions.hxx>
+#include <iostream>
+
+int main( int argc, char** argv ) {
+	po::parser parser;
+	parser[ "optimization" ]	// corresponds to --optimization
+		.abbreviation( 'O' )	// corresponds to -O
+		.type( po::u32 );		// expects an unsigned 32-bit integer
+
+	parser( argc, argv );		// parses the command line arguments
+
+	auto&& O = parser[ "optimization" ];
+	if( !O.available() )
+		std::cout << "no optimization level set!\n";
+	else
+		std::cout << "optimization level set to " << O.get().u32 << '\n';
+}
+```
+And in action:
+```
+> ./optimization.exe
+no optimization level set!
+> ./optimization.exe -O2
+optimization level set to 2
+> ./optimization.exe -O=0xFF
+optimization level set to 255
+> ./optimization.exe -O3 --optimization 1e2
+optimization level set to 100
+```
+## Example 2 (`fallback`, `was_set`, `string`, `multi`)
+Let's expand on the previous code. We want it to assume a certain value for the option `optimization` even if the user sets none. This can be achieved through the `.fallback(...)` method. After parsing, the method `.was_set()` tells us whether the option was actually set by the user or fell back on the default value.
+
+Furthermore, we implement the option `-I` to let the user specify include paths. Paths should not be converted to any arithmetic type so we simply set the type to `po::string`.
+
+By calling the method `.multi()` we're telling the library to store *all* values, not just the last one. The number of arguments can be retrieved by calling the `.size()` or the `.count()` method. The individual values may be read by means of the iterators returned by `.begin()` and `.end()`. Bear in mind that these iterators point to instances of `po::value`s, so you still need to refer to the member `.string`. One way of avoiding this is to directly use the iterators provided by `.begin<po::string>()` and `.end<po::string>()`. These random-access iterators behave as if they referred to instances of `std::string`s.
+
+```cpp
+#include <ProgramOptions.hxx>
+#include <iostream>
+
+int main( int argc, char** argv ) {
+	po::parser parser;
+	parser[ "optimization" ]
+		.abbreviation( 'O' )
+		.type( po::u32 )
+		.fallback( 0 );			// if --optimization is not explicitly specified, assume 0
+
+	parser[ "include-path" ]	// corresponds to --include-path
+		.abbreviation( 'I' )	// corresponds to -I
+		.type( po::string )		// expects a string
+		.multi();				// allows multiple arguments for the same option
+
+	parser( argc, argv );
+
+	auto&& O = parser[ "optimization" ];
+	// .was_set() reports whether the option was specified by the user or relied on the predefined fallback value.
+	std::cout << "optimization level (" << ( O.was_set() ? "manual" : "auto" ) << ") = " << O.get().u32 << '\n';
+
+	auto&& I = parser[ "include-path" ];
+	// .size() and .count() return the number of given arguments. Without .multi(), their return value is always <= 1.
+	std::cout << "included paths (" << I.size() << "):\n";
+	// Here, the non-template .begin() / .end() methods were used. Their value type is po::value,
+	// which is not a value in itself but contains the desired values as members, i.e. i.string.
+	for( auto&& i : I )
+		std::cout << '\t' << i.string << '\n';
+}
+```
+In action:
+```
+> ./include.exe -I/usr/include/foo -I "/usr/include/bar" -O3
+optimization level (manual) = 3
+included paths (2):
+        /usr/include/foo
+        /usr/include/bar
+```
+## Example 3 (`description`, `callback`, unnamed parameter)
+Up until now, we were missing the infamous `--help` command. While *ProgramOptions.hxx* will take over the tedious work of neatly formatting and displaying the options, it doesn't add a `--help` command automatically. That's up to us and so is adding an apt description for every available option. We may do so by use of the `.description(...)` method.
+
+But how do we accomplish printing the options whenever there's a `--help` command? This is where callbacks come into play. Callbacks are functions that we supply to *ProgramOptions.hxx* to call. After we handed them over, we don't need to worry about invoking them as that's entirely *ProgramOptions.hxx*'s job. In the code below, we pass a lambda whose sole purpose is to print the options. Whenever the corresponding option occurs (`--help` in this case), the callback is invoked.
+
+The unnamed parameter `""` is used to process nameless arguments. Consider the line: `gcc -O2 a.c b.c` `a.c` and `b.c` are, unlike `-O2`, not named and neither do they start with a hyphen. They are unnamed parameters but they are important nevertheless. In *ProgramOptions.hxx*, you'd treat them like any other option. They only differ in their default settings.
+```cpp
+#include <ProgramOptions.hxx>
+#include <iostream>
+
+int main( int argc, char** argv ) {
+	po::parser parser;
+	parser[ "optimization" ]
+		.abbreviation( 'O' )
+		.description( "set the optimization level (default: -O0)" )
+		.type( po::u32 )
+		.fallback( 0 );
+
+	parser[ "include-path" ]
+		.abbreviation( 'I' )
+		.description( "add an include path" )
+		.type( po::string )
+		.multi();
+
+	parser[ "help" ]			// corresponds to --help
+		.abbreviation( '?' )	// corresponds to -?
+		.description( "print this help screen" )
+		.callback( [ & ]{ std::cout << parser << '\n'; } );
+								// callbacks get invoked when the option occurs
+
+	parser[ "" ]				// the unnamed parameter is used for direct arguments, i.e. gcc a.c b.c
+		// .type( po::string )	// redundant; default for the unnamed parameter
+		// .multi()				// redundant; default for the unnamed parameter
+		.callback( [ & ]( std::string const& x ){ std::cout << "processed \'" << x << "\' successfully!\n"; } );
+								// as .get_type() == po::string, the callback may either take a std::string
+
+	// parsing returns false if at least one error has occurred
+	if( !parser( argc, argv ) ) {
+		std::cerr << "errors occurred; aborting\n";
+		return -1;
+	}
+	// we don't want to print anything else if the help screen has been displayed
+	if( parser[ "help" ].size() )
+		return 0;
+
+	std::cout << "processed files: " << parser[ "" ].size() << '\n';
+
+	auto&& O = parser[ "optimization" ];
+	std::cout << "optimization level (" << ( O.was_set() ? "manual" : "auto" ) << ") = " << O.get().u32 << '\n';
+
+	auto&& I = parser[ "include-path" ];
+	std::cout << "included paths (" << I.size() << "):\n";
+	for( auto&& i : I )
+		std::cout << '\t' << i.string << '\n';
+}
+```
+How the help screen appears:
+```
+> ./files.exe --help
+Usage:
+  files.exe [arguments...] [options]
+Available options:
+  -I, --include-path  add an include path
+  -?, --help          print this help screen
+  -O, --optimization  set the optimization level (default: -O0)
+```
+In action:
+```
+> ./files.exe -I ./include foo.cxx bar.cxx -O3
+processed 'foo.cxx' successfully!
+processed 'bar.cxx' successfully!
+processed files: 2
+optimization level (manual) = 3
+included paths (1):
+        ./include
+```
+## Example 4 (more `callback`s, more `fallback`s, `f64`, `to_vector`)
+In this example, we will employ already known mechanics but lay the focus on their versatility. Let's start with callbacks:
+- Multiple callbacks are invoked in order of their addition.
+- For an option of type `po::f64`, the possible parameters of a callback are: <*none*>, `std::string`, `po::f64_t`, or any type that is implicitly constructible from these.
+- When using C++14, using `auto&&` as a callback's parameter is also possible.
+
+About fallbacks:
+- They can be provided in any form that would also suffice when parsed, e.g. as a `std::string`.
+- If `.is_multi()`, `.fallback(...)` can take an arbitrary number of values.
+
+About `.type()`:
+- `po::void_`: No value, either occurred or not
+- `po::string`: Unaltered string
+- `po::i32` / `po::i64`: Signed integer; supports hexadecimal (*0x*), binary (*0b*) and positive exponents (*e0*)
+- `po::u32` / `po::u64`: Unsigned integer; same as with signed integers
+- `po::f32` / `po::f64`: Floating point value; supports exponents (*e0*), infinities (*inf*) and NaNs (*nan*)
+
+Reading `.multi()` options:
+- `.[c][r]begin()` and `.[c][r]end()`: Iterators to `po::value`s, thus you have to choose the right member when dereferencing, e.g. `.begin()->i32`
+- `.[c][r]begin< po::i32 >()` and `.[c][r]end< po::i32 >()`: Iterators to the specified type
+- `.get( i )` and `.size()`: Reference to `po::value`; there's also a `.get_or( i, v )` method, returning the second parameter if the index is out of range
+- `.to_vector< po::i32 >()`: Returns an `std::vector` with elements of the specified type
+
+```cpp
+#include <ProgramOptions.hxx>
+#include <iostream>
+#include <numeric>
+
+int main( int argc, char** argv ) {
+	po::parser parser;
+
+	parser[ "" ]
+		.type( po::f64 )			// expects 64-bit floating point numbers
+		.multi()					// allows multiple arguments
+		.fallback( -8, "+.5e2" )	// if no arguments were provided, assume these as default
+		.callback( [ & ]{ std::cout << "successfully parsed "; } )
+		.callback( [ & ]( std::string const& x ){ std::cout << x; } )
+		.callback( [ & ]{ std::cout << " which equals "; } )
+		.callback( [ & ]( po::f64_t x ){ std::cout << x << '\n'; } );
+
+	parser( argc, argv );
+
+	auto&& x = parser[ "" ];
+	std::cout << "( + ";
+	for( auto&& i : x.to_vector< po::f64 >() )	// unnecessary copy; for demonstration purposes
+		std::cout << i << ' ';
+	std::cout << ") = " << std::accumulate( x.begin< po::f64 >(), x.end< po::f64 >(), po::f64_t{} ) << '\n';
+}
+```
+In action:
+```
+> ./sum.exe
+( + -8 50 ) = 42
+> ./sum.exe 39.5 2.5
+successfully parsed 39.5 which equals 39.5
+successfully parsed 2.5 which equals 2.5
+( + 39.5 2.5 ) = 42
+> ./sum.exe 1e3 -1e0 -1e1 -2e2
+successfully parsed 1e3 which equals 1000
+successfully parsed -1e0 which equals -1
+successfully parsed -1e1 which equals -10
+successfully parsed -2e2 which equals -200
+( + 1000 -1 -10 -200 ) = 789
+> ./sum.exe inf -1
+successfully parsed inf which equals inf
+successfully parsed -1 which equals -1
+( + inf -1 ) = inf
+> ./sum.exe 12 NaN
+successfully parsed 12 which equals 12
+successfully parsed NaN which equals nan
+( + 12 nan ) = nan
+```
+# Defaults
+This small table helps clarifying the defaults for different kinds of options.
+
+|Name                 |`"multi-char"`       |`"x"`                |`""` *(unnamed parameter)*|
+|---------------------|---------------------|---------------------|---------------------|
+|`.abbreviation`      |`'\0'` *(none)*      |`'x'`                |:x: *(disallowed)*   |
+|`.type`              |`po::void_`          |`po::void_`          |`po::string`         |
+|`.single` / `.multi` |`.single`            |`.single`            |`.multi`             |
+
+# Flags
+All flags have to be `#define`d before including *ProgramOptions.hxx*. Different translation units may include *ProgramOptions.hxx* using different flags.
+
+### `#define ProgramOptions_silent`
+Suppresses all communication via `stderr`. Without this flags, *ProgramOptions.hxx* notifies the user in case of warnings or errors occurring.
+
+### `#define ProgramOptions_no_exceptions`
+Disables all exceptions and thus allows compilation with `-fno-exceptions`. However, incorrect use of the library and unmet preconditions will call `abort()` via `assert(...)`. This flag is implied by `NDEBUG`.
+
+### `#define NDEBUG`
+Disables all runtime checks and all exceptions. Incorrect use of the library and unmet preconditions will lead to undefined behaviour.
+
+# Third-party libraries
+- [**Catch**](https://github.com/philsquared/Catch) for unit testing
+
+# License
+*ProgramOptions.hxx* is published under the [MIT License](https://tldrlegal.com/license/mit-license). See the enclosed LICENSE.txt for more information.
