@@ -237,7 +237,7 @@ int main( int argc, char** argv ) {
 
     auto&& x = parser[ "" ];
     std::cout << "( + ";
-    for( auto&& i : x.to_vector< po::f64 >() )  // unnecessary copy; for demonstration purposes
+    for( auto&& i : x.to_vector< po::f64 >() )  // unnecessary copy; for demonstration purposes only
         std::cout << i << ' ';
     std::cout << ") = " << std::accumulate( x.begin< po::f64 >(), x.end< po::f64 >(), po::f64_t{} ) << '\n';
 }
@@ -278,7 +278,7 @@ This small table helps clarifying the defaults for the different kinds of option
 All flags have to be `#define`d before including *ProgramOptions.hxx*. Different translation units may include *ProgramOptions.hxx* using different flags.
 
 ### `#define ProgramOptions_silent`
-Suppresses all communication via `stderr`. Without this flags, *ProgramOptions.hxx* notifies the user in case of warnings or errors occurring while parsing. For instance, if an option requires an argument of type `i32` and it couldn't be parsed or wasn't provided at all, *ProgramOptions.hxx* would print a warning that the option must have an argument and that it hence was ignored.
+Suppresses all communication via `stderr`. Without this flag, *ProgramOptions.hxx* notifies the user in case of warnings or errors occurring while parsing. For instance, if an option requires an argument of type `i32` and it couldn't be parsed or wasn't provided at all, *ProgramOptions.hxx* would print a warning that the option must have an argument and that it hence was ignored.
 
 ### `#define ProgramOptions_no_exceptions`
 Disables all exceptions and thus allows compilation with `-fno-exceptions`. However, incorrect use of the library and unmet preconditions entail `abort()` via `assert(...)`. This flag is implied by `NDEBUG`.

@@ -18,7 +18,7 @@ int main( int argc, char** argv ) {
 
 	auto&& x = parser[ "" ];
 	std::cout << "( + ";
-	for( auto&& i : x.to_vector< po::f64 >() )	// unnecessary copy; for demonstration purposes
+	for( auto&& i : x.to_vector< po::f64 >() )	// unnecessary copy; for demonstration purposes only
 		std::cout << i << ' ';
 	std::cout << ") = " << std::accumulate( x.begin< po::f64 >(), x.end< po::f64 >(), po::f64_t{} ) << '\n';
 }
