@@ -1730,6 +1730,8 @@ namespace po {
 						stream << repeat{ static_cast< std::size_t >( rem ) + mid_padding, ' ' };
 					else
 						stream << '\n' << repeat{ description_start, ' ' };
+				} else {
+					stream << repeat{ verbose_width + mid_padding, ' ' };
 				}
 				std::size_t caret = description_start;
 				std::string const& descr = i.second.get_description();
