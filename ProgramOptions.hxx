@@ -42,7 +42,118 @@
 	#endif // ProgramOptions_no_exceptions
 #endif // NDEBUG
 
+#ifndef ProgramOptions_no_colors
+	#if defined( _WIN32 ) || defined( WIN32 )
+		#define ProgramOptions_windows
+		#ifndef WIN32_LEAN_AND_MEAN
+			#define WIN32_LEAN_AND_MEAN 1
+		#endif // !WIN32_LEAN_AND_MEAN
+		// #define VC_EXTRALEAN
+		#ifndef NOMINMAX
+			#define NOMINMAX 1
+		#endif // !NOMINMAX
+		#ifndef STRICT
+			#define STRICT 1
+		#endif // !STRICT
+		#include <windows.h>
+	#else
+		#define ProgramOptions_ansi
+	#endif
+#endif // !ProgramOptions_no_colors
+
 namespace po {
+
+	enum color_t {
+		black			= 30,
+		maroon			= 31,
+		green			= 32,
+		brown			= 33,
+		navy			= 34,
+		purple			= 35,
+		teal			= 36,
+		light_gray 		= 37,
+		dark_gray		= -30,
+		red				= -31,
+		lime			= -32,
+		yellow			= -33,
+		blue			= -34,
+		fuchsia			= -35,
+		cyan			= -36,
+		white		 	= -37
+	};
+#ifndef ProgramOptions_no_colors
+	class color_resetter;
+	color_resetter operator<<( std::ostream& stream, color_t color );
+	class color_resetter {
+		std::ostream& m_stream;
+		color_t m_color;
+
+#ifdef ProgramOptions_windows
+		HANDLE m_console;
+		WORD m_old_attributes;
+#endif // ProgramOptions_windows
+
+		color_resetter( std::ostream& stream, color_t color )
+			: m_stream{ stream }, m_color{ color } {
+#ifdef ProgramOptions_windows
+			m_console = GetStdHandle( STD_OUTPUT_HANDLE );
+			assert( m_console != INVALID_HANDLE_VALUE );
+			CONSOLE_SCREEN_BUFFER_INFO info;
+			const bool result = GetConsoleScreenBufferInfo( m_console, &info );
+			assert( result );
+			( void )result;
+			m_old_attributes = info.wAttributes;
+			WORD attribute = 0;
+			if( color < 0 ) {
+				color = static_cast< color_t >( -color );
+				attribute |= FOREGROUND_INTENSITY;
+			}
+			if( color == maroon || color == brown || color == purple || color == light_gray )
+				attribute |= FOREGROUND_RED;
+			if( color == green || color == brown || color == teal || color == light_gray )
+				attribute |= FOREGROUND_GREEN;
+			if( color == navy || color == purple || color == teal || color == light_gray )
+				attribute |= FOREGROUND_BLUE;
+			SetConsoleTextAttribute( m_console, attribute );
+#endif // ProgramOptions_windows
+#ifdef ProgramOptions_ansi
+			m_stream << "\x1B[";
+			if( color < 0 ) {
+				color = static_cast< color_t >( -color );
+				m_stream << "1;";
+			}
+			m_stream << static_cast< int >( color ) << 'm';
+#endif // ProgramOptions_ansi
+		}
+
+	public:
+		~color_resetter() {
+#ifdef ProgramOptions_windows
+			SetConsoleTextAttribute( m_console, m_old_attributes );
+#endif // ProgramOptions_windows
+#ifdef ProgramOptions_ansi
+			m_stream << "\x1B[0m";
+#endif // ProgramOptions_ansi
+		}
+
+		operator std::ostream&() const {
+			return m_stream;
+		}
+		template< typename T >
+		std::ostream& operator<<( T&& arg ) {
+			return m_stream << std::forward< T >( arg );
+		}
+
+		friend color_resetter operator<<( std::ostream& stream, color_t color );
+	};
+	inline color_resetter operator<<( std::ostream& stream, color_t color ) {
+		return { stream, color };
+	}
+#else // !ProgramOptions_no_colors
+	inline std::ostream& operator<<( std::ostream& stream, color_t /* color */ ) { // -Wunused-parameter
+		return stream;
+	}
+#endif // !ProgramOptions_no_colors
 
 #ifdef ProgramOptions_silent
 	inline std::ostream& err() {
@@ -1489,23 +1600,28 @@ namespace po {
 		template< typename expression_t, typename... args_t >
 		bool parse( options_t::iterator option, expression_t const& expression, args_t&&... args ) const {
 			const error_code code = option->second.parse( std::forward< args_t >( args )... );
+			if( code == error_code::none )
+				return true;
+			err() << red << "error: ";
+			err() << "option \'";
+			err() << blue << option->first;
+			err() << "\' ";
 			switch( code ) {
-				case error_code::none:
-					return true;
 				case error_code::argument_expected:
 				case error_code::conversion_error:
-					err() << "option \'" << option->first << "\' expects an argument of type " << vt2str( option->second.get_type() );
+					err() << "expects an argument of type " << vt2str( option->second.get_type() );
 					break;
 				case error_code::no_argument_expected:
-					err() << "option \'" << option->first << "\' doesn't expect any arguments";
+					err() << "doesn't expect any arguments";
 					break;
 				case error_code::out_of_range:
-					err() << "option \'" << option->first << "\' has an argument that caused an out of range error";
-				// 	break;
-				// default:
-				// 	assert( false );
+					err() << "has an argument that caused an out of range error";
+				default: // -Wswitch
+					;
 			}
-			err() << "; ignoring \'" << expression << "\'\n";
+			err() << "; ignoring \'";
+			err() << white << expression;
+			err() << "\'\n";
 			return false;
 		}
 		bool dashed_non_option( char* arg ) {
@@ -1536,6 +1652,22 @@ namespace po {
 				argument = &argv[ i ][ j ];
 			}
 			return parse( option, std::move( expression ), argument );
+		}
+
+		static void error() {
+			err() << red << "error: ";
+		}
+		template< typename arg_t >
+		static void ignoring( arg_t&& arg ) {
+			err() << "; ignoring \'";
+			err() << white << std::forward< arg_t >( arg );
+			err() << "\'\n";
+		}
+		template< typename arg_t >
+		static void error_unrecognized_option( arg_t&& arg ) {
+			error();
+			err() << "unrecognized option";
+			ignoring( std::forward< arg_t >( arg ) );
 		}
 
 	public:
@@ -1577,7 +1709,9 @@ namespace po {
 				if( argv[ i ][ 0 ] != '-' || ( has_unnamed && dashed_non_option( argv[ i ] ) ) ) {
 					if( !has_unnamed ) {
 						good = false;
-						err() << "unnamed arguments not allowed; ignoring \'" << argv[ i ] << "\'\n";
+						error();
+						err() << "unnamed arguments not allowed";
+						ignoring( argv[ i ] );
 					} else {
 						good &= parse( unnamed, argv[ i ], argv[ i ] );
 					}
@@ -1586,6 +1720,7 @@ namespace po {
 					if( argv[ i ][ 1 ] == '\0' ) {
 						// -
 						good = false;
+						error();
 						err() << "invalid argument; ignoring single hyphen\n";
 					} else if( argv[ i ][ 1 ] == '-' ) {
 						// --...
@@ -1595,7 +1730,7 @@ namespace po {
 						const auto opt = m_options.find( std::string{ first, last } );
 						if( opt == m_options.end() ) {
 							good = false;
-							err() << "unrecognized option; ignoring \'" << argv[ i ] << "\'\n";
+							error_unrecognized_option( argv[ i ] );
 						} else {
 							good &= extract_argument( opt, argc, argv, i, last - argv[ i ] );
 						}
@@ -1604,25 +1739,27 @@ namespace po {
 						const auto head = find_abbreviation( argv[ i ][ 1 ] );
 						if( head == m_options.end() ) {
 							good = false;
-							err() << "unrecognized option; ignoring \'" << argv[ i ] << "\'\n";
+							error_unrecognized_option( argv[ i ] );
 						} else if( head->second.get_type() == void_ ) {
 							// -fgh
 							char c;
 							for( std::size_t j = 1; ( c = argv[ i ][ j ] ) != '\0'; ++j ) {
 								if( !std::isprint( c ) || c == '-' ) {
 									good = false;
-									err() << "invalid character \'" << c << "\'; ignoring \'" << &argv[ i ][ j ] << "\'\n";
+									err() << "invalid character \'" << c << "\'";
+									ignoring( &argv[ i ][ j ] );
 									break;
 								}
 								const auto opt = find_abbreviation( c );
 								if( opt == m_options.end() ) {
 									good = false;
-									err() << "unrecognized option; ignoring \'" << c << "\'\n";
+									error_unrecognized_option( c );
 									continue;
 								}
 								if( opt->second.get_type() != void_ ) {
 									good = false;
-									err() << "non-void options not allowed in option packs; ignoring \'" << c << "\'\n";
+									err() << "non-void options not allowed in option packs";
+									ignoring( c );
 									continue;
 								}
 								good &= parse( opt, c );
@@ -1716,7 +1853,7 @@ namespace po {
 				const char abbreviation = i.second.get_abbreviation();
 				const bool verbose = i.first.size() > 1;
 				if( abbreviation )
-					stream << '-' << abbreviation;
+					stream << white << '-' << abbreviation;
 				else
 					stream << repeat{ abbreviation_width, ' ' };
 				if( abbreviation && verbose )
@@ -1724,7 +1861,7 @@ namespace po {
 				else
 					stream << repeat{ separator_width, ' ' };
 				if( verbose ) {
-					stream << '-' << '-' << i.first;
+					stream << white << '-' << '-' << i.first;
 					const int rem = verbose_width - 2 - i.first.size();
 					if( rem >= 0 )
 						stream << repeat{ static_cast< std::size_t >( rem ) + mid_padding, ' ' };

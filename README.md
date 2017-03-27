@@ -286,6 +286,11 @@ Disables all exceptions and thus allows compilation with `-fno-exceptions`. Howe
 ### `#define NDEBUG`
 Disables all runtime checks and all exceptions. Incorrect use of the library and unmet preconditions will lead to undefined behaviour. Implies `#define ProgramOptions_no_exceptions`.
 
+### `#define ProgramOptions_no_colors`
+Disables colored output. Without this option enabled, *ProgramOptions.hxx* looks something like this (on GNU/Linux):
+
+![Screenshot of console with colors](https://raw.githubusercontent.com/Fytch/ProgramOptions.hxx/master/assets/colors_scrot.png)
+
 # Third-party libraries
 - [**Catch**](https://github.com/philsquared/Catch) for unit testing.
 
