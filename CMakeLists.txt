@@ -5,8 +5,8 @@ set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic-errors -Wno-dep
 set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -ggdb -fno-omit-frame-pointer" )
 set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -march=native -DNDEBUG -s -flto" )
 
-include_directories( "/" )
-include_directories( "ext/" )
+include_directories( "./" )
+include_directories( "./ext/" )
 
 file( GLOB_RECURSE test_src test/*.cxx )
 add_executable( Test ${test_src} )
