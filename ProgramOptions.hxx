@@ -1091,6 +1091,14 @@ namespace po {
 		void mutable_operation() const {
 			ProgramOptions_assert( m_mutable, "cannot change options after parsing" );
 		}
+#else // ProgramOptions_debug
+	public:
+		void make_immutable() {
+		}
+
+	private:
+		void mutable_operation() const {
+		}
 #endif // ProgramOptions_debug
 
 		value_vector_base& get_vector() const {
@@ -1359,10 +1367,8 @@ namespace po {
 		}
 
 		option& abbreviation( char value ) {
-#ifdef ProgramOptions_debug
-			mutable_operation();
-#endif // ProgramOptions_debug
 			ProgramOptions_assert( value == '\0' || ( std::isgraph( value ) && value != '-' ), "abbreviation must either be \'\\0\' or a printable character" );
+			mutable_operation();
 			m_abbreviation = value;
 			return *this;
 		}
@@ -1383,17 +1389,13 @@ namespace po {
 
 	public:
 		option& description( std::string const& value ) {
-#ifdef ProgramOptions_debug
 			mutable_operation();
-#endif // ProgramOptions_debug
 			assert_description( value );
 			m_description = value;
 			return *this;
 		}
 		option& description( std::string&& value ) {
-#ifdef ProgramOptions_debug
 			mutable_operation();
-#endif // ProgramOptions_debug
 			assert_description( value );
 			m_description = std::move( value );
 			return *this;
@@ -1421,11 +1423,9 @@ namespace po {
 
 	public:
 		option& type( value_type type ) {
-#ifdef ProgramOptions_debug
-			mutable_operation();
-#endif // ProgramOptions_debug
 			ProgramOptions_assert( m_fallback == nullptr && m_data == nullptr && m_callbacks.empty(), "type() must be set prior to: fallback(), callback(), parsing" );
 			ProgramOptions_assert( valid_type( type ), "type: invalid value_type" );
+			mutable_operation();
 			m_type = type;
 			return *this;
 		}
@@ -1434,18 +1434,14 @@ namespace po {
 		}
 
 		option& single() {
-#ifdef ProgramOptions_debug
-			mutable_operation();
-#endif // ProgramOptions_debug
 			ProgramOptions_assert( m_fallback == nullptr && m_data == nullptr && m_callbacks.empty(), "single() must be set prior to: fallback(), callback(), parsing" );
+			mutable_operation();
 			m_multi = false;
 			return *this;
 		}
 		option& multi() {
-#ifdef ProgramOptions_debug
-			mutable_operation();
-#endif // ProgramOptions_debug
 			ProgramOptions_assert( m_fallback == nullptr && m_data == nullptr && m_callbacks.empty(), "multi() must be set prior to: fallback(), callback(), parsing" );
+			mutable_operation();
 			m_multi = true;
 			return *this;
 		}
@@ -1489,11 +1485,9 @@ namespace po {
 	public:
 		template< typename... args_t >
 		option& fallback( args_t&&... args ) {
-#ifdef ProgramOptions_debug
-			mutable_operation();
-#endif // ProgramOptions_debug
 			static_assert( sizeof...( args_t ) != 0, "fallback: no arguments provided" );
 			ProgramOptions_assert( get_type() != void_, "fallback: not allowed for options of type void_" );
+			mutable_operation();
 			if( is_single() )
 				fallback_single( std::forward< args_t >( args )... );
 			else
@@ -1501,18 +1495,14 @@ namespace po {
 			return *this;
 		}
 		option& no_fallback() {
-#ifdef ProgramOptions_debug
 			mutable_operation();
-#endif // ProgramOptions_debug
 			m_fallback = nullptr;
 			return *this;
 		}
 
 		template< typename invocable_t >
 		option& callback( invocable_t&& invocable ) {
-#ifdef ProgramOptions_debug
 			mutable_operation();
-#endif // ProgramOptions_debug
 			std::unique_ptr< callback_base > new_callback;
 			switch( get_type() ) {
 			case void_:
@@ -1549,9 +1539,7 @@ namespace po {
 			return *this;
 		}
 		option& no_callback() {
-#ifdef ProgramOptions_debug
 			mutable_operation();
-#endif // ProgramOptions_debug
 			m_callbacks.clear();
 			return *this;
 		}
@@ -1770,10 +1758,8 @@ namespace po {
 					}
 				}
 			}
-#ifdef ProgramOptions_debug
 			for( auto&& i : m_options )
 				i.second.make_immutable();
-#endif // ProgramOptions_debug
 			return good;
 		}
 
