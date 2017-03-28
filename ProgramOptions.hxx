@@ -38,7 +38,7 @@
 			do {\
 				if( !( Expression ) )\
 					throw std::logic_error{ ( "ProgramOptions.hxx:" + std::to_string( __LINE__ ) + ": " ) + ( Message ) };\
-			} while( 0 );
+			} while( 0 )
 	#endif // PROGRAMOPTIONS_NO_EXCEPTIONS
 #endif // NDEBUG
 
