@@ -18,6 +18,7 @@ TEST_CASE( "string", "[ProgramOptions]" ) {
 		.type( po::string )
 		.multi()
 		.fallback( 3, "no-exceptions" );
+	auto&& unnamed = parser[ "" ];
 
 	REQUIRE( a.count() == 0 );
 	REQUIRE( b.count() == 0 );
@@ -26,6 +27,7 @@ TEST_CASE( "string", "[ProgramOptions]" ) {
 	REQUIRE( f.count() == 2 );
 	REQUIRE( f.get( 0 ).string == "3" );
 	REQUIRE( f.get( 1 ).string == "no-exceptions" );
+	REQUIRE( unnamed.count() == 0 );
 
 	SECTION( "Scenario 1" ) {
 		const arg_provider A {
@@ -41,6 +43,7 @@ TEST_CASE( "string", "[ProgramOptions]" ) {
 			"-f",
 			"-f",
 			"down here",
+			"unnamed arg",
 			"-flto",
 			"-fmax-errors=25",
 			"-fno-rtti"
@@ -61,5 +64,33 @@ TEST_CASE( "string", "[ProgramOptions]" ) {
 		CHECK( f.get( 2 ).string == "lto" );
 		CHECK( f.get( 3 ).string == "max-errors=25" );
 		CHECK( f.get( 4 ).string == "no-rtti" );
+		REQUIRE( unnamed.count() == 1 );
+		CHECK( unnamed.get().string == "unnamed arg" );
+	}
+	SECTION( "Scenario 2" ) {
+		const arg_provider A {
+			"/Test",
+			"-a",
+			"foo",
+			"bar",
+			"-foo",
+			"--",
+			"-flto",
+			"--",
+			"-fmax-errors=25",
+		};
+		REQUIRE( parser( A.argc, A.argv ) );
+		REQUIRE( a.count() == 1 );
+		CHECK( a.get().string == "foo" );
+		REQUIRE( b.count() == 0 );
+		REQUIRE( c.count() == 1 );
+		CHECK( c.get().string == "test" );
+		REQUIRE( f.count() == 1 );
+		CHECK( f.get().string == "oo" );
+		REQUIRE( unnamed.count() == 4 );
+		CHECK( unnamed.get( 0 ).string == "bar" );
+		CHECK( unnamed.get( 1 ).string == "-flto" );
+		CHECK( unnamed.get( 2 ).string == "--" );
+		CHECK( unnamed.get( 3 ).string == "-fmax-errors=25" );
 	}
 }

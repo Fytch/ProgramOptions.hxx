@@ -1624,6 +1624,12 @@ namespace po {
 			err() << "\'\n";
 		}
 		template< typename arg_t >
+		static void error_unnamed_arguments( arg_t&& arg ) {
+			error();
+			err() << "unnamed arguments not allowed";
+			ignoring( arg );
+		}
+		template< typename arg_t >
 		static void error_unrecognized_option( arg_t&& arg ) {
 			error();
 			err() << "unrecognized option";
@@ -1669,9 +1675,7 @@ namespace po {
 				if( argv[ i ][ 0 ] != '-' || ( has_unnamed && dashed_non_option( argv[ i ] ) ) ) {
 					if( !has_unnamed ) {
 						good = false;
-						error();
-						err() << "unnamed arguments not allowed";
-						ignoring( argv[ i ] );
+						error_unnamed_arguments( argv[ i ] );
 					} else {
 						good &= parse( unnamed, argv[ i ], argv[ i ] );
 					}
@@ -1683,16 +1687,29 @@ namespace po {
 						error();
 						err() << "invalid argument; ignoring single hyphen\n";
 					} else if( argv[ i ][ 1 ] == '-' ) {
-						// --...
-						char* first = &argv[ i ][ 2 ];
-						char* last = first;
-						for( ; valid_designator_character( *last ); ++last );
-						const auto opt = m_options.find( std::string{ first, last } );
-						if( opt == m_options.end() ) {
-							good = false;
-							error_unrecognized_option( argv[ i ] );
+						if( argv[ i ][ 2 ] == '\0' ) {
+							// --
+							if( !has_unnamed ) {
+								good = false;
+								error_unnamed_arguments( argv[ i ] );
+							} else {
+								while( ++i < argc ) {
+									good &= parse( unnamed, argv[ i ], argv[ i ] );
+								}
+								break;
+							}
 						} else {
-							good &= extract_argument( opt, argc, argv, i, last - argv[ i ] );
+							// --...
+							char* first = &argv[ i ][ 2 ];
+							char* last = first;
+							for( ; valid_designator_character( *last ); ++last );
+							const auto opt = m_options.find( std::string{ first, last } );
+							if( opt == m_options.end() ) {
+								good = false;
+								error_unrecognized_option( argv[ i ] );
+							} else {
+								good &= extract_argument( opt, argc, argv, i, last - argv[ i ] );
+							}
 						}
 					} else {
 						// -f...
