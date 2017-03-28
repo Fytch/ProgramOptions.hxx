@@ -13,6 +13,13 @@ TEST_CASE( "exceptions", "[ProgramOptions]" ) {
 	auto&& bc = parser[ "bc" ]
 		.type( po::string )
 		.multi();
+	SECTION( "designators" ) {
+		CHECK_THROWS_AS( parser[ "-foo" ], std::logic_error );
+		CHECK_THROWS_AS( parser[ "bar32" ], std::logic_error );
+		CHECK_THROWS_AS( parser[ "sepa rated" ], std::logic_error );
+		CHECK_THROWS_AS( parser[ " " ], std::logic_error );
+		CHECK_NOTHROW( parser[ "foo_BAR" ] );
+	}
 	SECTION( "get()" ) {
 		CHECK_THROWS_AS( a.get(), std::logic_error );
 		CHECK_THROWS_AS( bc.get(), std::logic_error );

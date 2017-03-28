@@ -1686,7 +1686,7 @@ namespace po {
 						// --...
 						char* first = &argv[ i ][ 2 ];
 						char* last = first;
-						for( ; std::isalpha( *last ) || *last == '-'; ++last );
+						for( ; valid_designator_character( *last ); ++last );
 						const auto opt = m_options.find( std::string{ first, last } );
 						if( opt == m_options.end() ) {
 							good = false;
@@ -1736,15 +1736,18 @@ namespace po {
 		}
 
 	private:
+		static bool valid_designator_character( char c ) {
+			return std::isalpha( c ) || c == '-' || c == '_';
+		}
 		static bool valid_designator( std::string const& designator ) {
 			if( designator.empty() )
 				return true;
 			if( designator[ 0 ] == '-' )
 				return false;
-			return std::find_if_not( designator.begin(), designator.end(), []( char c ){ return std::isalpha( c ) || c == '-'; } ) == designator.end();
+			return std::find_if_not( designator.begin(), designator.end(), &valid_designator_character ) == designator.end();
 		}
 		option& operator_brackets_helper( std::string&& designator ) {
-			PROGRAMOPTIONS_ASSERT( valid_designator( designator ), "operator[]: designator may only consist of letters and hyphens and mustn't start with a hyphen" );
+			PROGRAMOPTIONS_ASSERT( valid_designator( designator ), "operator[]: designator may only consist of letters, hyphens and underscores and mustn't start with a hyphen" );
 			const bool empty = designator.empty();
 			const char initial = designator.size() == 1 ? designator[ 0 ] : '\0';
 			const auto result = m_options.emplace( std::move( designator ), option{} );
