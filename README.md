@@ -15,13 +15,13 @@
 # Getting started
 It is highly recommended that you at least briefly skim through the chapters [**Integration**](#integration) and [**Usage**](#usage) before starting.
 
-The quickest way to get started is to download *ProgramOptions.hxx* as well as one of the sampless and go from there.
+The quickest way to get started is to download *ProgramOptions.hxx* as well as one of the samples and go from there.
 
-### `samples.cxx`
+### `sample.cxx`
 The default choice. Using *ProgramOptions.hxx* incorrectly or failing to meet a function's preconditions will throw an exception which will, by default, terminate the program and display a useful message, explaining where exactly things went wrong. If you don't want the program to be terminated, you may provide your own `try` and `catch` blocks to deal with [`std::logic_error`s](http://en.cppreference.com/w/cpp/error/logic_error).
 
-### `samples_noexcept.cxx`
-Using this samples is only recommended if you are already somewhat familiar with *ProgramOptions.hxx*. Incorrect programs will crash without any messages unless your STL implementation does so when [`assert`ions](http://en.cppreference.com/w/cpp/error/assert) fail.
+### `sample_noexcept.cxx`
+Using this sample is only recommended if you are already somewhat familiar with *ProgramOptions.hxx*. Incorrect programs will crash without any messages unless your STL implementation does so when [`assert`ions](http://en.cppreference.com/w/cpp/error/assert) fail.
 
 # Design goals
 - **Non-intrusive**. Unlike other program option libraries, such as [*Boost.Program_options*](http://www.boost.org/doc/libs/1_63_0/doc/html/program_options.html), *ProgramOptions.hxx* requires neither additional library binaries nor integration into the build process. Just drop in the header, include it and you're all set. *ProgramOptions.hxx* doesn't force you to enable exceptions or RTTI and runs just fine with `-fno-rtti -fno-exceptions` (the latter requires you to [`#define PROGRAMOPTIONS_NO_EXCEPTIONS`](#define-programoptions_no_exceptions) prior to including the header, though).
