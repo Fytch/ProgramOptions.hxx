@@ -5,7 +5,7 @@
 int main( int argc, char** argv ) {
 	po::parser parser;
 
-	parser[ "" ]
+	auto&& x = parser[ "" ]			// the unnamed parameter
 		.type( po::f64 )			// expects 64-bit floating point numbers
 		.multi()					// allows multiple arguments
 		.fallback( -8, "+.5e2" )	// if no arguments were provided, assume these as default
@@ -16,7 +16,6 @@ int main( int argc, char** argv ) {
 
 	parser( argc, argv );
 
-	auto&& x = parser[ "" ];
 	std::cout << "( + ";
 	for( auto&& i : x.to_vector< po::f64 >() )	// unnecessary copy; for demonstration purposes only
 		std::cout << i << ' ';

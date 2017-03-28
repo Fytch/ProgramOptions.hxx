@@ -121,6 +121,8 @@ Up until now, we were missing the infamous `--help` command. While *ProgramOptio
 But how do we accomplish printing the options whenever there's a `--help` command? This is where callbacks come into play. Callbacks are functions that we supply to *ProgramOptions.hxx* to call. After we handed them over, we don't need to worry about invoking them as that's entirely *ProgramOptions.hxx*' job. In the code below, we pass a [lambda](http://en.cppreference.com/w/cpp/language/lambda) whose sole purpose is to print the options. Whenever the corresponding option occurs (`--help` in this case), the callback is invoked.
 
 The *unnamed parameter* `""` is used to process nameless arguments. Consider the command line: `gcc -O2 a.c b.c` Here, unlike `-O2`, `a.c` and `b.c` are not named and neither do they start with a hyphen. They are unnamed parameters but they are important nevertheless. In *ProgramOptions.hxx*, you'd treat them like any other option. They only differ in their [default settings](#defaults).
+
+Note that, in order to pass arguments starting with a hyphen to the unnamed parameter, you'll have to pass `--` first, signifying that all further arguments should be passed right to the unnamed parameter without attempting to interpret them.
 ```cpp
 #include <ProgramOptions.hxx>
 #include <iostream>
@@ -183,10 +185,11 @@ Available options:
 ```
 In action:
 ```
-> ./files.exe -I ./include foo.cxx bar.cxx -O3
+> ./files.exe -I ./include foo.cxx bar.cxx -O3 -- "-qux.cxx"
 processed 'foo.cxx' successfully!
 processed 'bar.cxx' successfully!
-processed files: 2
+processed '-qux.cxx' successfully!
+processed files: 3
 optimization level (manual) = 3
 include paths (1):
         ./include
@@ -224,7 +227,7 @@ In this example, we will employ already known mechanics but lay the focus on the
 int main( int argc, char** argv ) {
     po::parser parser;
 
-    parser[ "" ]
+    auto&& x = parser[ "" ]
         .type( po::f64 )            // expects 64-bit floating point numbers
         .multi()                    // allows multiple arguments
         .fallback( -8, "+.5e2" )    // if no arguments were provided, assume these as default
@@ -235,7 +238,6 @@ int main( int argc, char** argv ) {
 
     parser( argc, argv );
 
-    auto&& x = parser[ "" ];
     std::cout << "( + ";
     for( auto&& i : x.to_vector< po::f64 >() )  // unnecessary copy; for demonstration purposes only
         std::cout << i << ' ';
