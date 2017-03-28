@@ -1,7 +1,7 @@
 #include <catch.hpp>
-#define ProgramOptions_silent
+#define PROGRAMOPTIONS_SILENT
 #undef NDEBUG
-#undef ProgramOptions_no_exceptions
+#undef PROGRAMOPTIONS_NO_EXCEPTIONS
 #include <ProgramOptions.hxx>
 #include "arg_provider.hxx"
 #include <stdexcept>

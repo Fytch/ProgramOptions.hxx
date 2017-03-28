@@ -1,4 +1,4 @@
-#define ProgramOptions_no_exceptions
+#define PROGRAMOPTIONS_NO_EXCEPTIONS
 #include <ProgramOptions.hxx>
 #include <iostream>
 

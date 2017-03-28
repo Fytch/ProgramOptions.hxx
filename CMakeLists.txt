@@ -1,7 +1,7 @@
 cmake_minimum_required( VERSION 2.8.8 )
 project( ProgramOptions )
 
-set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic-errors -Wno-deprecated -std=c++11 -fno-rtti" ) # -fno-exceptions -DProgramOptions_NoExceptions # needed for Catch
+set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic-errors -Wno-deprecated -std=c++11 -fno-rtti" ) # -fno-exceptions -DPROGRAMOPTIONS_NO_EXCEPTIONS # needed for Catch
 set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -ggdb -fno-omit-frame-pointer" )
 set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -march=native -DNDEBUG -s -flto" )
 

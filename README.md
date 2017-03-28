@@ -24,7 +24,7 @@ The default choice. Using *ProgramOptions.hxx* incorrectly or failing to meet a 
 Using this template is only recommended if you are already somewhat familiar with *ProgramOptions.hxx*. Incorrect programs will crash without any messages unless your STL implementation does so when [`assert`ions](http://en.cppreference.com/w/cpp/error/assert) fail.
 
 # Design goals
-- **Non-intrusive**. Unlike other program option libraries, such as [*Boost.Program_options*](http://www.boost.org/doc/libs/1_63_0/doc/html/program_options.html), *ProgramOptions.hxx* requires neither additional library binaries nor integration into the build process. Just drop in the header, include it and you're all set. *ProgramOptions.hxx* doesn't force you to enable exceptions or RTTI and runs just fine with `-fno-rtti -fno-exceptions` (the latter requires you to [`#define ProgramOptions_no_exceptions`](#define-programoptions_no_exceptions) prior to including the header, though).
+- **Non-intrusive**. Unlike other program option libraries, such as [*Boost.Program_options*](http://www.boost.org/doc/libs/1_63_0/doc/html/program_options.html), *ProgramOptions.hxx* requires neither additional library binaries nor integration into the build process. Just drop in the header, include it and you're all set. *ProgramOptions.hxx* doesn't force you to enable exceptions or RTTI and runs just fine with `-fno-rtti -fno-exceptions` (the latter requires you to [`#define PROGRAMOPTIONS_NO_EXCEPTIONS`](#define-programoptions_no_exceptions) prior to including the header, though).
 - **Intuitive**. *ProgramOptions.hxx* is designed to feel smooth and blend in well with other modern C++11 code.
 - **Correct**. Extensive unit tests and runtime checks contribute to more correct software, both on the side of the user and the developer of *ProgramOptions.hxx*.
 - **Permissive**. The [MIT License](https://tldrlegal.com/license/mit-license) under which *ProgramOptions.hxx* is published grants unrestricted freedom.
@@ -277,16 +277,16 @@ This small table helps clarifying the defaults for the different kinds of option
 # Flags
 All flags have to be `#define`d before including *ProgramOptions.hxx*. Different translation units may include *ProgramOptions.hxx* using different flags.
 
-### `#define ProgramOptions_silent`
+### `#define PROGRAMOPTIONS_SILENT`
 Suppresses all communication via `stderr`. Without this flag, *ProgramOptions.hxx* notifies the user in case of warnings or errors occurring while parsing. For instance, if an option requires an argument of type `i32` and it couldn't be parsed or wasn't provided at all, *ProgramOptions.hxx* would print a warning that the option must have an argument and that it hence was ignored.
 
-### `#define ProgramOptions_no_exceptions`
+### `#define PROGRAMOPTIONS_NO_EXCEPTIONS`
 Disables all exceptions and thus allows compilation with `-fno-exceptions`. However, incorrect use of the library and unmet preconditions entail `abort()` via `assert(...)`. This flag is implied by `NDEBUG`.
 
 ### `#define NDEBUG`
-Disables all runtime checks and all exceptions. Incorrect use of the library and unmet preconditions will lead to undefined behaviour. Implies `#define ProgramOptions_no_exceptions`.
+Disables all runtime checks and all exceptions. Incorrect use of the library and unmet preconditions will lead to undefined behaviour. Implies `#define PROGRAMOPTIONS_NO_EXCEPTIONS`.
 
-### `#define ProgramOptions_no_colors`
+### `#define PROGRAMOPTIONS_NO_COLORS`
 Disables colored output. Without this option enabled, *ProgramOptions.hxx* looks something like this (on GNU/Linux):
 
 ![Screenshot of console with colors](https://raw.githubusercontent.com/Fytch/ProgramOptions.hxx/master/assets/colors_scrot.png)

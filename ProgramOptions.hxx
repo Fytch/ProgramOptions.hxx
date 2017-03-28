@@ -1,5 +1,5 @@
-#ifndef ProgramOptions_hxx_included
-#define ProgramOptions_hxx_included
+#ifndef PROGRAMOPTIONS_HXX_INCLUDED
+#define PROGRAMOPTIONS_HXX_INCLUDED
 
 #include <string>
 #include <cstring>
@@ -19,32 +19,32 @@
 #include <sstream>
 #include <iostream>
 
-#ifndef ProgramOptions_no_exceptions
+#ifndef PROGRAMOPTIONS_NO_EXCEPTIONS
 	#include <stdexcept>
-#endif // !ProgramOptions_no_exceptions
+#endif // !PROGRAMOPTIONS_NO_EXCEPTIONS
 
 #ifndef NDEBUG
-	#define ProgramOptions_debug
+	#define PROGRAMOPTIONS_DEBUG
 #endif // !NDEBUG
 
-#undef ProgramOptions_assert
+#undef PROGRAMOPTIONS_ASSERT
 #ifdef NDEBUG
-	#define ProgramOptions_assert( Expression, Message )
+	#define PROGRAMOPTIONS_ASSERT( Expression, Message )
 #else // NDEBUG
-	#ifdef ProgramOptions_no_exceptions
-		#define ProgramOptions_assert( Expression, Message ) assert( ( Expression ) && Message );
-	#else // ProgramOptions_no_exceptions
-		#define ProgramOptions_assert( Expression, Message )\
+	#ifdef PROGRAMOPTIONS_NO_EXCEPTIONS
+		#define PROGRAMOPTIONS_ASSERT( Expression, Message ) assert( ( Expression ) && Message );
+	#else // PROGRAMOPTIONS_NO_EXCEPTIONS
+		#define PROGRAMOPTIONS_ASSERT( Expression, Message )\
 			do {\
 				if( !( Expression ) )\
 					throw std::logic_error{ ( "ProgramOptions.hxx:" + std::to_string( __LINE__ ) + ": " ) + ( Message ) };\
 			} while( 0 );
-	#endif // ProgramOptions_no_exceptions
+	#endif // PROGRAMOPTIONS_NO_EXCEPTIONS
 #endif // NDEBUG
 
-#ifndef ProgramOptions_no_colors
+#ifndef PROGRAMOPTIONS_NO_COLORS
 	#if defined( _WIN32 ) || defined( WIN32 )
-		#define ProgramOptions_windows
+		#define PROGRAMOPTIONS_WINDOWS
 		#ifndef WIN32_LEAN_AND_MEAN
 			#define WIN32_LEAN_AND_MEAN 1
 		#endif // !WIN32_LEAN_AND_MEAN
@@ -57,9 +57,9 @@
 		#endif // !STRICT
 		#include <windows.h>
 	#else
-		#define ProgramOptions_ansi
+		#define PROGRAMOPTIONS_ANSI
 	#endif
-#endif // !ProgramOptions_no_colors
+#endif // !PROGRAMOPTIONS_NO_COLORS
 
 namespace po {
 
@@ -81,21 +81,21 @@ namespace po {
 		cyan			= -36,
 		white		 	= -37
 	};
-#ifndef ProgramOptions_no_colors
+#ifndef PROGRAMOPTIONS_NO_COLORS
 	class color_resetter;
 	color_resetter operator<<( std::ostream& stream, color_t color );
 	class color_resetter {
 		std::ostream& m_stream;
 		color_t m_color;
 
-#ifdef ProgramOptions_windows
+#ifdef PROGRAMOPTIONS_WINDOWS
 		HANDLE m_console;
 		WORD m_old_attributes;
-#endif // ProgramOptions_windows
+#endif // PROGRAMOPTIONS_WINDOWS
 
 		color_resetter( std::ostream& stream, color_t color )
 			: m_stream{ stream }, m_color{ color } {
-#ifdef ProgramOptions_windows
+#ifdef PROGRAMOPTIONS_WINDOWS
 			m_console = GetStdHandle( STD_OUTPUT_HANDLE );
 			assert( m_console != INVALID_HANDLE_VALUE );
 			CONSOLE_SCREEN_BUFFER_INFO info;
@@ -115,25 +115,25 @@ namespace po {
 			if( color == navy || color == purple || color == teal || color == light_gray )
 				attribute |= FOREGROUND_BLUE;
 			SetConsoleTextAttribute( m_console, attribute );
-#endif // ProgramOptions_windows
-#ifdef ProgramOptions_ansi
+#endif // PROGRAMOPTIONS_WINDOWS
+#ifdef PROGRAMOPTIONS_ANSI
 			m_stream << "\x1B[";
 			if( color < 0 ) {
 				color = static_cast< color_t >( -color );
 				m_stream << "1;";
 			}
 			m_stream << static_cast< int >( color ) << 'm';
-#endif // ProgramOptions_ansi
+#endif // PROGRAMOPTIONS_ANSI
 		}
 
 	public:
 		~color_resetter() {
-#ifdef ProgramOptions_windows
+#ifdef PROGRAMOPTIONS_WINDOWS
 			SetConsoleTextAttribute( m_console, m_old_attributes );
-#endif // ProgramOptions_windows
-#ifdef ProgramOptions_ansi
+#endif // PROGRAMOPTIONS_WINDOWS
+#ifdef PROGRAMOPTIONS_ANSI
 			m_stream << "\x1B[0m";
-#endif // ProgramOptions_ansi
+#endif // PROGRAMOPTIONS_ANSI
 		}
 
 		operator std::ostream&() const {
@@ -149,13 +149,13 @@ namespace po {
 	inline color_resetter operator<<( std::ostream& stream, color_t color ) {
 		return { stream, color };
 	}
-#else // !ProgramOptions_no_colors
+#else // !PROGRAMOPTIONS_NO_COLORS
 	inline std::ostream& operator<<( std::ostream& stream, color_t /* color */ ) { // -Wunused-parameter
 		return stream;
 	}
-#endif // !ProgramOptions_no_colors
+#endif // !PROGRAMOPTIONS_NO_COLORS
 
-#ifdef ProgramOptions_silent
+#ifdef PROGRAMOPTIONS_SILENT
 	inline std::ostream& err() {
 		struct dummy_buf_t : public std::streambuf {
 			int overflow( int c ) {
@@ -166,11 +166,11 @@ namespace po {
 		static std::ostream dummy_str{ &dummy_buf };
 		return dummy_str;
 	}
-#else // ProgramOptions_silent
+#else // PROGRAMOPTIONS_SILENT
 	inline std::ostream& err() {
 		return std::cerr;
 	}
-#endif // ProgramOptions_silent
+#endif // PROGRAMOPTIONS_SILENT
 
 	// Compatibility stuff for the lack of C++14 support
 	template< typename T, typename... args_t >
@@ -350,7 +350,7 @@ namespace po {
 		}
 
 		operator T const&() const {
-			ProgramOptions_assert( good(), "parsing_report: cannot access data of an erroneous report" );
+			PROGRAMOPTIONS_ASSERT( good(), "parsing_report: cannot access data of an erroneous report" );
 			return value;
 		}
 
@@ -666,8 +666,8 @@ namespace po {
 		}
 
 		value const& get() const {
-			ProgramOptions_assert( begin() != nullptr, "value_vector_base: cannot access elements of a void_ vector" );
-			ProgramOptions_assert( size() != 0, "value_vector_base: cannot access elements of an empty vector" );
+			PROGRAMOPTIONS_ASSERT( begin() != nullptr, "value_vector_base: cannot access elements of a void_ vector" );
+			PROGRAMOPTIONS_ASSERT( size() != 0, "value_vector_base: cannot access elements of an empty vector" );
 			return begin()[ size() - 1 ];
 		}
 		value& get() {
@@ -764,11 +764,11 @@ namespace po {
 	struct callback_base {
 		virtual ~callback_base() = default;
 		virtual void invoke( value const& object ) = 0;
-#ifdef ProgramOptions_debug
+#ifdef PROGRAMOPTIONS_DEBUG
 		virtual bool good() const {
 			return true;
 		}
-#endif // ProgramOptions_debug
+#endif // PROGRAMOPTIONS_DEBUG
 	};
 
 	template< typename invocable_t >
@@ -793,13 +793,13 @@ namespace po {
 	struct callback : public callback_storage< invocable_t > {
 		using callback_storage< invocable_t >::callback_storage;
 		virtual void invoke( value const& /* object */ ) override { // -Wunused-parameter
-			ProgramOptions_assert( false, "callback: incompatible parameter type" );
+			PROGRAMOPTIONS_ASSERT( false, "callback: incompatible parameter type" );
 		}
-#ifdef ProgramOptions_debug
+#ifdef PROGRAMOPTIONS_DEBUG
 		virtual bool good() const override {
 			return false;
 		}
-#endif // ProgramOptions_debug
+#endif // PROGRAMOPTIONS_DEBUG
 	};
 	template< typename invocable_t, bool with_string, bool with_type >
 	struct callback< void_, invocable_t, true, with_string, with_type > : public callback_storage< invocable_t > {
@@ -1079,7 +1079,7 @@ namespace po {
 
 		std::vector< std::unique_ptr< callback_base > > m_callbacks;
 
-#ifdef ProgramOptions_debug
+#ifdef PROGRAMOPTIONS_DEBUG
 		bool m_mutable = true;
 
 	public:
@@ -1089,9 +1089,9 @@ namespace po {
 
 	private:
 		void mutable_operation() const {
-			ProgramOptions_assert( m_mutable, "cannot change options after parsing" );
+			PROGRAMOPTIONS_ASSERT( m_mutable, "cannot change options after parsing" );
 		}
-#else // ProgramOptions_debug
+#else // PROGRAMOPTIONS_DEBUG
 	public:
 		void make_immutable() {
 		}
@@ -1099,10 +1099,10 @@ namespace po {
 	private:
 		void mutable_operation() const {
 		}
-#endif // ProgramOptions_debug
+#endif // PROGRAMOPTIONS_DEBUG
 
 		value_vector_base& get_vector() const {
-			ProgramOptions_assert( m_data != nullptr || m_fallback != nullptr, "cannot access an option with neither user set value nor fallback" );
+			PROGRAMOPTIONS_ASSERT( m_data != nullptr || m_fallback != nullptr, "cannot access an option with neither user set value nor fallback" );
 			if( m_data != nullptr )
 				return *m_data;
 			else
@@ -1238,7 +1238,7 @@ namespace po {
 		}
 		template< value_type type >
 		void assert_iterator_type() const {
-			ProgramOptions_assert( valid_iterator_type< type >(), "" );
+			PROGRAMOPTIONS_ASSERT( valid_iterator_type< type >(), "" );
 		}
 
 		void notify( value const& object ) {
@@ -1271,12 +1271,12 @@ namespace po {
 		}
 
 		value const& get() const {
-			ProgramOptions_assert( available(), "get: option unavailable" );
+			PROGRAMOPTIONS_ASSERT( available(), "get: option unavailable" );
 			return get_vector().get();
 		}
 		value const& get( std::size_t i ) const {
-			ProgramOptions_assert( available(), "get: option unavailable" );
-			ProgramOptions_assert( i < size(), "get: index out of range" );
+			PROGRAMOPTIONS_ASSERT( available(), "get: option unavailable" );
+			PROGRAMOPTIONS_ASSERT( i < size(), "get: index out of range" );
 			return begin()[ i ];
 		}
 		// TODO: strictly speaking, this is implementation defined
@@ -1367,7 +1367,7 @@ namespace po {
 		}
 
 		option& abbreviation( char value ) {
-			ProgramOptions_assert( value == '\0' || ( std::isgraph( value ) && value != '-' ), "abbreviation must either be \'\\0\' or a printable character" );
+			PROGRAMOPTIONS_ASSERT( value == '\0' || ( std::isgraph( value ) && value != '-' ), "abbreviation must either be \'\\0\' or a printable character" );
 			mutable_operation();
 			m_abbreviation = value;
 			return *this;
@@ -1384,7 +1384,7 @@ namespace po {
 			return std::find_if_not( value.begin(), value.end(), []( char c ){ return std::isprint( c ) || c == '\n'; } ) == value.end();
 		}
 		static void assert_description( std::string const& value ) {
-			ProgramOptions_assert( valid_description( value ), "description may only consist of printable characters and newlines" );
+			PROGRAMOPTIONS_ASSERT( valid_description( value ), "description may only consist of printable characters and newlines" );
 		}
 
 	public:
@@ -1423,8 +1423,8 @@ namespace po {
 
 	public:
 		option& type( value_type type ) {
-			ProgramOptions_assert( m_fallback == nullptr && m_data == nullptr && m_callbacks.empty(), "type() must be set prior to: fallback(), callback(), parsing" );
-			ProgramOptions_assert( valid_type( type ), "type: invalid value_type" );
+			PROGRAMOPTIONS_ASSERT( m_fallback == nullptr && m_data == nullptr && m_callbacks.empty(), "type() must be set prior to: fallback(), callback(), parsing" );
+			PROGRAMOPTIONS_ASSERT( valid_type( type ), "type: invalid value_type" );
 			mutable_operation();
 			m_type = type;
 			return *this;
@@ -1434,13 +1434,13 @@ namespace po {
 		}
 
 		option& single() {
-			ProgramOptions_assert( m_fallback == nullptr && m_data == nullptr && m_callbacks.empty(), "single() must be set prior to: fallback(), callback(), parsing" );
+			PROGRAMOPTIONS_ASSERT( m_fallback == nullptr && m_data == nullptr && m_callbacks.empty(), "single() must be set prior to: fallback(), callback(), parsing" );
 			mutable_operation();
 			m_multi = false;
 			return *this;
 		}
 		option& multi() {
-			ProgramOptions_assert( m_fallback == nullptr && m_data == nullptr && m_callbacks.empty(), "multi() must be set prior to: fallback(), callback(), parsing" );
+			PROGRAMOPTIONS_ASSERT( m_fallback == nullptr && m_data == nullptr && m_callbacks.empty(), "multi() must be set prior to: fallback(), callback(), parsing" );
 			mutable_operation();
 			m_multi = true;
 			return *this;
@@ -1456,13 +1456,13 @@ namespace po {
 		template< typename T >
 		parsing_report< value > fallback_parse( T&& arg ) {
 			auto result = make_value( std::forward< T >( arg ) );
-			ProgramOptions_assert( result.good(), "fallback: cannot convert argument to option's type" );
+			PROGRAMOPTIONS_ASSERT( result.good(), "fallback: cannot convert argument to option's type" );
 			return result;
 		}
 
 		template< typename head_t, typename... tail_t >
 		void fallback_single( head_t&& head, tail_t&&... /* tail */ ) { // -Wunused-parameter
-			ProgramOptions_assert( sizeof...( tail_t ) == 0, "fallback: too many arguments for single() option" );
+			PROGRAMOPTIONS_ASSERT( sizeof...( tail_t ) == 0, "fallback: too many arguments for single() option" );
 			decltype( m_fallback ) new_fallback = make_unique< value_vector< false, true > >();
 			new_fallback->push_back( fallback_parse( std::forward< head_t >( head ) ) );
 			m_fallback.swap( new_fallback );
@@ -1486,7 +1486,7 @@ namespace po {
 		template< typename... args_t >
 		option& fallback( args_t&&... args ) {
 			static_assert( sizeof...( args_t ) != 0, "fallback: no arguments provided" );
-			ProgramOptions_assert( get_type() != void_, "fallback: not allowed for options of type void_" );
+			PROGRAMOPTIONS_ASSERT( get_type() != void_, "fallback: not allowed for options of type void_" );
 			mutable_operation();
 			if( is_single() )
 				fallback_single( std::forward< args_t >( args )... );
@@ -1532,9 +1532,9 @@ namespace po {
 			// default:
 			// 	assert( false );
 			}
-#ifdef ProgramOptions_debug
-			ProgramOptions_assert( new_callback->good(), "callback: incompatible parameter type" );
-#endif // ProgramOptions_debug
+#ifdef PROGRAMOPTIONS_DEBUG
+			PROGRAMOPTIONS_ASSERT( new_callback->good(), "callback: incompatible parameter type" );
+#endif // PROGRAMOPTIONS_DEBUG
 			m_callbacks.emplace_back( std::move( new_callback ) );
 			return *this;
 		}
@@ -1679,8 +1679,8 @@ namespace po {
 		}
 
 		bool operator()( int argc, char** argv ) {
-			ProgramOptions_assert( wellformed(), "cannot parse with an ill-formed parser" );
-			ProgramOptions_assert( std::none_of( m_options.begin(), m_options.end(), []( options_t::value_type const& x ){ return x.second.was_set(); } ), "some options were already set" );
+			PROGRAMOPTIONS_ASSERT( wellformed(), "cannot parse with an ill-formed parser" );
+			PROGRAMOPTIONS_ASSERT( std::none_of( m_options.begin(), m_options.end(), []( options_t::value_type const& x ){ return x.second.was_set(); } ), "some options were already set" );
 			if( argc == 0 )
 				return true;
 			bool good = true;
@@ -1772,7 +1772,7 @@ namespace po {
 			return std::find_if_not( designator.begin(), designator.end(), []( char c ){ return std::isalpha( c ) || c == '-'; } ) == designator.end();
 		}
 		option& operator_brackets_helper( std::string&& designator ) {
-			ProgramOptions_assert( valid_designator( designator ), "operator[]: designator may only consist of letters and hyphens and mustn't start with a hyphen" );
+			PROGRAMOPTIONS_ASSERT( valid_designator( designator ), "operator[]: designator may only consist of letters and hyphens and mustn't start with a hyphen" );
 			const bool empty = designator.empty();
 			const char initial = designator.size() == 1 ? designator[ 0 ] : '\0';
 			const auto result = m_options.emplace( std::move( designator ), option{} );
@@ -1806,7 +1806,7 @@ namespace po {
 				mid_padding = 2,
 				paragraph_indenture = 2
 			};
-			ProgramOptions_assert( object.wellformed(), "cannot print an ill-formed parser" );
+			PROGRAMOPTIONS_ASSERT( object.wellformed(), "cannot print an ill-formed parser" );
 			stream << "Usage:\n  " << object.m_program_name;
 			const auto unnamed = object.m_options.find( "" );
 			if( unnamed != object.m_options.end() ) {
@@ -1887,4 +1887,4 @@ namespace po {
 	};
 }
 
-#endif // !ProgramOptions_hxx_included
+#endif // !PROGRAMOPTIONS_HXX_INCLUDED

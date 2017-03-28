@@ -1,5 +1,5 @@
 #include <catch.hpp>
-#define ProgramOptions_silent
+#define PROGRAMOPTIONS_SILENT
 #include <ProgramOptions.hxx>
 
 TEST_CASE( "defaults", "[ProgramOptions]" ) {
