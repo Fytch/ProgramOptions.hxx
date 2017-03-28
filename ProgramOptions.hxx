@@ -86,7 +86,6 @@ namespace po {
 	color_resetter operator<<( std::ostream& stream, color_t color );
 	class color_resetter {
 		std::ostream& m_stream;
-		color_t m_color;
 
 #ifdef PROGRAMOPTIONS_WINDOWS
 		HANDLE m_console;
@@ -94,7 +93,7 @@ namespace po {
 #endif // PROGRAMOPTIONS_WINDOWS
 
 		color_resetter( std::ostream& stream, color_t color )
-			: m_stream{ stream }, m_color{ color } {
+			: m_stream{ stream } {
 #ifdef PROGRAMOPTIONS_WINDOWS
 			m_console = GetStdHandle( STD_OUTPUT_HANDLE );
 			assert( m_console != INVALID_HANDLE_VALUE );
@@ -353,33 +352,6 @@ namespace po {
 			PROGRAMOPTIONS_ASSERT( good(), "parsing_report: cannot access data of an erroneous report" );
 			return value;
 		}
-
-		/*
-		template< typename U >
-		bool operator==( U const& rhs ) const {
-			return good() && value == rhs;
-		}
-		template< typename U >
-		bool operator!=( U const& rhs ) const {
-			return good() && value != rhs;
-		}
-		template< typename U >
-		bool operator<( U const& rhs ) const {
-			return good() && value < rhs;
-		}
-		template< typename U >
-		bool operator<=( U const& rhs ) const {
-			return good() && value <= rhs;
-		}
-		template< typename U >
-		bool operator>( U const& rhs ) const {
-			return good() && value > rhs;
-		}
-		template< typename U >
-		bool operator>=( U const& rhs ) const {
-			return good() && value >= rhs;
-		}
-		*/
 	};
 
 	inline bool is_bin_digit( char c ) {
