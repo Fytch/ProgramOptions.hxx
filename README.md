@@ -285,13 +285,19 @@ Suppresses all communication via `stderr`. Without this flag, *ProgramOptions.hx
 ### `#define PROGRAMOPTIONS_NO_EXCEPTIONS`
 Disables all exceptions and thus allows compilation with `-fno-exceptions`. However, incorrect use of the library and unmet preconditions entail `abort()` via `assert(...)`. This flag is implied by `NDEBUG`.
 
+:exclamation: This flag must not vary between different translation units in order to not violate C++' [one definition rule (ODR)](http://en.cppreference.com/w/cpp/language/definition).
+
 ### `#define NDEBUG`
 Disables all runtime checks and all exceptions. Incorrect use of the library and unmet preconditions will lead to undefined behaviour. Implies `#define PROGRAMOPTIONS_NO_EXCEPTIONS`.
+
+:exclamation: This flag must not vary between different translation units in order to not violate C++' [one definition rule (ODR)](http://en.cppreference.com/w/cpp/language/definition).
 
 ### `#define PROGRAMOPTIONS_NO_COLORS`
 Disables colored output. Without this option enabled, *ProgramOptions.hxx* looks something like this (on GNU/Linux):
 
 ![Screenshot of console with colors](https://raw.githubusercontent.com/Fytch/ProgramOptions.hxx/master/assets/colors_scrot.png)
+
+:exclamation: This flag must not vary between different translation units in order to not violate C++' [one definition rule (ODR)](http://en.cppreference.com/w/cpp/language/definition).
 
 # Third-party libraries
 - [**Catch**](https://github.com/philsquared/Catch) for unit testing.
