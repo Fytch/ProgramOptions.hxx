@@ -1664,7 +1664,11 @@ namespace po {
 			if( argc == 0 )
 				return true;
 			bool good = true;
+#ifdef PROGRAMOPTIONS_WINDOWS
 			m_program_name = std::max( std::strrchr( argv[ 0 ], '/' ), std::strrchr( argv[ 0 ], '\\' ) );
+#else // PROGRAMOPTIONS_WINDOWS
+			m_program_name = std::strrchr( argv[ 0 ], '/' );
+#endif // PROGRAMOPTIONS_WINDOWS
 			if( m_program_name == nullptr )
 				m_program_name = argv[ 0 ];
 			else
