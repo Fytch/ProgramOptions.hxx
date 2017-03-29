@@ -95,6 +95,7 @@ namespace po {
 		color_resetter( std::ostream& stream, color_t color )
 			: m_stream{ stream } {
 #ifdef PROGRAMOPTIONS_WINDOWS
+			m_stream << std::flush;
 			m_console = GetStdHandle( STD_OUTPUT_HANDLE );
 			assert( m_console != INVALID_HANDLE_VALUE );
 			CONSOLE_SCREEN_BUFFER_INFO info;
@@ -128,6 +129,7 @@ namespace po {
 	public:
 		~color_resetter() {
 #ifdef PROGRAMOPTIONS_WINDOWS
+			m_stream << std::flush;
 			SetConsoleTextAttribute( m_console, m_old_attributes );
 #endif // PROGRAMOPTIONS_WINDOWS
 #ifdef PROGRAMOPTIONS_ANSI
