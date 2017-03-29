@@ -1359,6 +1359,7 @@ namespace po {
 		}
 		static void assert_description( std::string const& value ) {
 			PROGRAMOPTIONS_ASSERT( valid_description( value ), "description may only consist of printable characters and newlines" );
+			( void )value; // -Wunused-parameter
 		}
 
 	public:
