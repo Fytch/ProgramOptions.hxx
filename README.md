@@ -1,6 +1,8 @@
 # Contents
 - [Getting started](#getting-started)
 - [Design goals](#design-goals)
+- [Features](#features)
+  - [Syntax](#syntax)
 - [Integration](#integration)
 - [Usage](#usage)
   - [Example 1 (`abbreviation`, `u32`, `available`, `get`)](#example-1-abbreviation-u32-available-get)
@@ -29,14 +31,65 @@ Using this sample is only recommended if you are already somewhat familiar with 
 - **Correct**. Extensive unit tests and runtime checks contribute to more correct software, both on the side of the user and the developer of *ProgramOptions.hxx*.
 - **Permissive**. The [MIT License](https://tldrlegal.com/license/mit-license) under which *ProgramOptions.hxx* is published grants unrestricted freedom.
 
+# Features
+![Screenshot](https://raw.githubusercontent.com/Fytch/ProgramOptions.hxx/master/assets/screenshot.png)
+
+- *Almost*<sup>1</sup> compliant with the [GNU Program Argument Syntax Conventions](https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html)
+- Automatic help screen generation
+- Automatic error handling
+- Suggestions for wrongly spelled options
+- Colored console output (can be turned off with [`#define PROGRAMOPTIONS_NO_COLORS`](#define-programoptions_no_colors))
+
+<sup>1</sup> *ProgramOptions.hxx* is generally more permissive and meets all but the following requirement:
+
+> - A token consisting of a single hyphen character is interpreted as an ordinary non-option argument. By convention, it is used to specify input from or output to the standard input and output streams.
+
+A single hyphen produces an error message and is being ignored in *ProgramOptions.hxx*.
+
+## Syntax
+*ProgramOptions.hxx* adheres to this syntax:
+
+```
+executable [arguments...] [options]
+```
+
+Both non-option arguments and options may be intermingled at will. All options and arguments are case-sensitive.
+
+### Non-option arguments
+Non-option arguments, also referred to as operands in POSIX, don't belong to any option but to the program itself. They shall never start with a hyphen as then they'd be interpreted as options instead. In order for them to contain whitespaces, they shall be wrapped in '' or "", depending on the shell.
+
+In *ProgramOptions.hxx*, we say that they are arguments of the unnamed parameter.
+
+### Options
+Unlike non-option arguments, options must start with a hyphen, followed by either a single character or another hyphen and a name.
+
+**Single-character** options only consist of a single hyphen and an identifying character. The character must be graphic ([`isgraph`](http://en.cppreference.com/w/cpp/string/byte/isgraph)).
+
+**Multi-character** options, also referred to as long options in GNU lingo, consist of two leading hyphens followed by a name. The name may consist of alphabetic characters, hyphens, and underscores but must not start with a hyphen.
+
+### Option arguments
+Both kinds of options may require arguments. The syntax for providing arguments to an option can be any of the following:
+
+|Single-character       |Multi-character        |
+|-----------------------|-----------------------|
+|`exec -O 3`            |`exec --optimization 3` <sup>1</sup>|
+|`exec -O=3`            |`exec --optimization=3`|
+|`exec -O3`             |`exec --optimization3` <sup>2</sup>|
+
+<sup>1</sup> Note that `-optimization` (with only a single hyphen) would be interpreted as the option `-o` with the argument `ptimization`.
+
+<sup>2</sup> Note that this syntax only works for arguments not starting with a letter, a hyphen or an underscore as these characters would be interpreted as part of the option's name.
+
 # Integration
 *ProgramOptions.hxx* is very easy to integrate. After downloading the header file, all that it takes is a simple:
 ```cpp
 #include "ProgramOptions.hxx"
 ```
 Don't forget to compile with C++11 enabled, i.e. with `-std=c++11`.
+
 # Usage
 Using *ProgramOptions.hxx* is straightforward; we'll explain it by means of examples. All examples shown here and more can be found in the `examples` directory, all of which are well-documented.
+
 ## Example 1 (`abbreviation`, `u32`, `available`, `get`)
 The following snippet is the complete source code for a simple program expecting an integer optimization level.
 ```cpp
@@ -115,6 +168,7 @@ include paths (2):
         /usr/include/foo
         /usr/include/bar
 ```
+
 ## Example 3 (`description`, `callback`, unnamed parameter)
 Up until now, we were missing the infamous `--help` command. While *ProgramOptions.hxx* will take over the tedious work of neatly formatting and displaying the options, it doesn't add a `--help` command automatically. That's up to us and so is adding an apt description for every available option. We may do so by use of the `.description(...)` method.
 
@@ -293,9 +347,7 @@ Disables all runtime checks and all exceptions. Incorrect use of the library and
 :exclamation: This flag must not vary across different translation units in order to not violate C++' [one definition rule (ODR)](http://en.cppreference.com/w/cpp/language/definition).
 
 ### `#define PROGRAMOPTIONS_NO_COLORS`
-Disables colored output. Without this option enabled, *ProgramOptions.hxx* looks something like this (on GNU/Linux):
-
-![Screenshot of console with colors](https://raw.githubusercontent.com/Fytch/ProgramOptions.hxx/master/assets/colors_scrot.png)
+Disables colored output. On Windows, *ProgramOptions.hxx* uses the WinAPI (i.e. [`SetConsoleTextAttribute`](https://msdn.microsoft.com/en-us/library/windows/desktop/ms686047)) to achieve colored console output whereas it uses [ANSI escape codes](http://bluesock.org/~willg/dev/ansi.html) anywhere else.
 
 :exclamation: This flag must not vary across different translation units in order to not violate C++' [one definition rule (ODR)](http://en.cppreference.com/w/cpp/language/definition).
 
@@ -303,4 +355,4 @@ Disables colored output. Without this option enabled, *ProgramOptions.hxx* looks
 - [**Catch**](https://github.com/philsquared/Catch) for unit testing.
 
 # License
-*ProgramOptions.hxx* is published under the [MIT License](https://tldrlegal.com/license/mit-license). See the enclosed LICENSE.txt for more information.
+*ProgramOptions.hxx* is licensed under the [MIT License](https://tldrlegal.com/license/mit-license). See the enclosed [LICENSE.txt](LICENSE.txt) for more information.
