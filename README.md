@@ -60,13 +60,13 @@ int main( int argc, char** argv ) {
 ```
 And in action:
 ```
-> ./optimization.exe
+$ ./optimization.exe
 no optimization level set!
-> ./optimization.exe -O2
+$ ./optimization.exe -O2
 optimization level set to 2
-> ./optimization.exe -O=0xFF
+$ ./optimization.exe -O=0xFF
 optimization level set to 255
-> ./optimization.exe -O3 --optimization 1e2
+$ ./optimization.exe -O3 --optimization 1e2
 optimization level set to 100
 ```
 ## Example 2 (`fallback`, `was_set`, `string`, `multi`)
@@ -109,7 +109,7 @@ int main( int argc, char** argv ) {
 ```
 In action:
 ```
-> ./include.exe -I/usr/include/foo -I "/usr/include/bar" -O3
+$ ./include.exe -I/usr/include/foo -I "/usr/include/bar" -O3
 optimization level (manual) = 3
 include paths (2):
         /usr/include/foo
@@ -175,7 +175,7 @@ int main( int argc, char** argv ) {
 ```
 How the help screen appears:
 ```
-> ./files.exe --help
+$ ./files.exe --help
 Usage:
   files.exe [arguments...] [options]
 Available options:
@@ -185,7 +185,7 @@ Available options:
 ```
 In action:
 ```
-> ./files.exe -I ./include foo.cxx bar.cxx -O3 -- "-qux.cxx"
+$ ./files.exe -I ./include foo.cxx bar.cxx -O3 -- "-qux.cxx"
 processed 'foo.cxx' successfully!
 processed 'bar.cxx' successfully!
 processed '-qux.cxx' successfully!
@@ -246,23 +246,23 @@ int main( int argc, char** argv ) {
 ```
 In action:
 ```
-> ./sum.exe
+$ ./sum.exe
 ( + -8 50 ) = 42
-> ./sum.exe 39.5 2.5
+$ ./sum.exe 39.5 2.5
 successfully parsed 39.5 which equals 39.5
 successfully parsed 2.5 which equals 2.5
 ( + 39.5 2.5 ) = 42
-> ./sum.exe 1e3 -1e0 -1e1 -2e2
+$ ./sum.exe 1e3 -1e0 -1e1 -2e2
 successfully parsed 1e3 which equals 1000
 successfully parsed -1e0 which equals -1
 successfully parsed -1e1 which equals -10
 successfully parsed -2e2 which equals -200
 ( + 1000 -1 -10 -200 ) = 789
-> ./sum.exe inf -1
+$ ./sum.exe inf -1
 successfully parsed inf which equals inf
 successfully parsed -1 which equals -1
 ( + inf -1 ) = inf
-> ./sum.exe 12 NaN
+$ ./sum.exe 12 NaN
 successfully parsed 12 which equals 12
 successfully parsed NaN which equals nan
 ( + 12 nan ) = nan
@@ -285,19 +285,19 @@ Suppresses all communication via `stderr`. Without this flag, *ProgramOptions.hx
 ### `#define PROGRAMOPTIONS_NO_EXCEPTIONS`
 Disables all exceptions and thus allows compilation with `-fno-exceptions`. However, incorrect use of the library and unmet preconditions entail `abort()` via `assert(...)`. This flag is implied by `NDEBUG`.
 
-:exclamation: This flag must not vary between different translation units in order to not violate C++' [one definition rule (ODR)](http://en.cppreference.com/w/cpp/language/definition).
+:exclamation: This flag must not vary across different translation units in order to not violate C++' [one definition rule (ODR)](http://en.cppreference.com/w/cpp/language/definition).
 
 ### `#define NDEBUG`
 Disables all runtime checks and all exceptions. Incorrect use of the library and unmet preconditions will lead to undefined behaviour. Implies `#define PROGRAMOPTIONS_NO_EXCEPTIONS`.
 
-:exclamation: This flag must not vary between different translation units in order to not violate C++' [one definition rule (ODR)](http://en.cppreference.com/w/cpp/language/definition).
+:exclamation: This flag must not vary across different translation units in order to not violate C++' [one definition rule (ODR)](http://en.cppreference.com/w/cpp/language/definition).
 
 ### `#define PROGRAMOPTIONS_NO_COLORS`
 Disables colored output. Without this option enabled, *ProgramOptions.hxx* looks something like this (on GNU/Linux):
 
 ![Screenshot of console with colors](https://raw.githubusercontent.com/Fytch/ProgramOptions.hxx/master/assets/colors_scrot.png)
 
-:exclamation: This flag must not vary between different translation units in order to not violate C++' [one definition rule (ODR)](http://en.cppreference.com/w/cpp/language/definition).
+:exclamation: This flag must not vary across different translation units in order to not violate C++' [one definition rule (ODR)](http://en.cppreference.com/w/cpp/language/definition).
 
 # Third-party libraries
 - [**Catch**](https://github.com/philsquared/Catch) for unit testing.
