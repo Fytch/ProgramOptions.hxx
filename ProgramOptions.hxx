@@ -211,6 +211,33 @@ namespace po {
 	using make_index_sequence = make_integer_sequence< std::size_t, N >;
 	// End of compatibility stuff
 
+	inline std::size_t damerau_levenshtein( char const* a, char const* b, std::size_t i, std::size_t j, std::size_t cutoff = std::numeric_limits< std::size_t >::max(), std::size_t distance = 0 ) {
+		const auto comp = []( char lhs, char rhs ){ return std::tolower( lhs ) == std::tolower( rhs ); };
+
+		if( distance >= cutoff )
+			return cutoff;
+		if( i == 0 )
+			return j;
+		if( j == 0 )
+			return i;
+		std::size_t result = std::min(
+			std::min(
+				damerau_levenshtein( a, b, i - 1, j, cutoff, distance + 1 ),
+				damerau_levenshtein( a, b, i, j - 1, cutoff, distance + 1 )
+			),
+			damerau_levenshtein( a, b, i - 1, j - 1, cutoff, distance + !comp( a[ i - 1 ], b[ j - 1 ] ) )
+		);
+		if( i >= 2 && j >= 2 && comp( a[ i - 1 ], b[ j - 2 ] ) && comp( a[ i - 2 ], b[ j - 1 ] ) )
+			result = std::min( result, damerau_levenshtein( a, b, i - 2, j - 2, cutoff, distance + 1 ) );
+		return result;
+	}
+	inline std::size_t damerau_levenshtein( char const* a, char const* b, std::size_t cutoff = std::numeric_limits< std::size_t >::max() ) {
+		return damerau_levenshtein( a, b, std::strlen( a ), std::strlen( b ), cutoff );
+	}
+	inline std::size_t damerau_levenshtein( std::string a, std::string b, std::size_t cutoff = std::numeric_limits< std::size_t >::max() ) {
+		return damerau_levenshtein( a.c_str(), b.c_str(), a.size(), b.size(), cutoff );
+	}
+
 	class repeat {
 		std::size_t m_count;
 		char m_character;
@@ -1555,17 +1582,81 @@ namespace po {
 
 		options_t::iterator find_abbreviation( char value ) {
 			auto iter = m_options.begin();
-			for( ; iter != m_options.end(); ++iter  )
+			for( ; iter != m_options.end(); ++iter )
 				if( iter->second.get_abbreviation() == value )
 					break;
 			return iter;
 		}
+
+		void suggest( std::string const& what ) {
+			err() << "; did you mean \'";
+			err() << white << what;
+			err() << "\'?";
+		}
+		void check_spelling( char single_char_option ) {
+			if( !std::isalpha( single_char_option ) )
+				return;
+			if( std::islower( single_char_option ) )
+				single_char_option = std::toupper( single_char_option );
+			else // if( std::isupper( single_char_option ) )
+				single_char_option = std::tolower( single_char_option );
+			if( find_abbreviation( single_char_option ) != m_options.end() )
+				suggest( { '-', single_char_option } );
+		}
+		void check_spelling( char const* multi_char_option ) {
+			assert( multi_char_option[ 0 ] == '-' && multi_char_option[ 1 ] == '-' && multi_char_option[ 2 ] != '\0' );
+			enum : std::size_t {
+				distance_cutoff = 4
+			};
+			char const* name_begin = multi_char_option + 2;
+			char const* name_end = name_begin;
+			for( ; valid_designator_character( *name_end ); ++name_end );
+			const std::size_t length = name_end - name_begin;
+			if( length == 0 )
+				return;
+			std::size_t min_distance = std::numeric_limits< std::size_t >::max();
+			options_t::const_iterator nearest_option;
+			for( auto iter = m_options.begin(); iter != m_options.end(); ++iter ) {
+				if( iter->first.empty() )
+					continue;
+				const std::size_t distance = damerau_levenshtein( name_begin, iter->first.c_str(), length, iter->first.length(), distance_cutoff );
+				if( distance < min_distance ) {
+					min_distance = distance;
+					nearest_option = iter;
+					if( min_distance == 0 )
+						break;
+				}
+			}
+			if( min_distance < distance_cutoff )
+				suggest( std::string( "--" ) + nearest_option->first );
+		}
+		static void error() {
+			err() << red << "error: ";
+		}
+		template< typename arg_t >
+		static void ignoring( arg_t const& arg ) {
+			err() << "; ignoring \'";
+			err() << white << arg;
+			err() << '\'';
+		}
+		template< typename arg_t >
+		static void error_unnamed_arguments( arg_t&& arg ) {
+			error();
+			err() << "unnamed arguments not allowed";
+			ignoring( arg );
+		}
+		template< typename arg_t >
+		void error_unrecognized_option( arg_t const& arg ) {
+			error();
+			err() << "unrecognized option";
+			ignoring( arg );
+		}
 		template< typename expression_t, typename... args_t >
-		bool parse( options_t::iterator option, expression_t const& expression, args_t&&... args ) const {
+		bool parse_argument( options_t::iterator option, expression_t const& expression, args_t&&... args ) const {
 			const error_code code = option->second.parse( std::forward< args_t >( args )... );
 			if( code == error_code::none )
 				return true;
-			err() << red << "error: ";
+			error();
 			err() << "option \'";
 			err() << blue << option->first;
 			err() << "\' ";
@@ -1582,9 +1673,8 @@ namespace po {
 				default: // -Wswitch
 					;
 			}
-			err() << "; ignoring \'";
-			err() << white << expression;
-			err() << "\'\n";
+			ignoring( expression );
+			err() << '\n';
 			return false;
 		}
 		bool dashed_non_option( char* arg ) {
@@ -1614,29 +1704,7 @@ namespace po {
 				// --vardata
 				argument = &argv[ i ][ j ];
 			}
-			return parse( option, std::move( expression ), argument );
-		}
-
-		static void error() {
-			err() << red << "error: ";
-		}
-		template< typename arg_t >
-		static void ignoring( arg_t&& arg ) {
-			err() << "; ignoring \'";
-			err() << white << std::forward< arg_t >( arg );
-			err() << "\'\n";
-		}
-		template< typename arg_t >
-		static void error_unnamed_arguments( arg_t&& arg ) {
-			error();
-			err() << "unnamed arguments not allowed";
-			ignoring( arg );
-		}
-		template< typename arg_t >
-		static void error_unrecognized_option( arg_t&& arg ) {
-			error();
-			err() << "unrecognized option";
-			ignoring( std::forward< arg_t >( arg ) );
+			return parse_argument( option, std::move( expression ), argument );
 		}
 
 	public:
@@ -1683,8 +1751,9 @@ namespace po {
 					if( !has_unnamed ) {
 						good = false;
 						error_unnamed_arguments( argv[ i ] );
+						err() << '\n';
 					} else {
-						good &= parse( unnamed, argv[ i ], argv[ i ] );
+						good &= parse_argument( unnamed, argv[ i ], argv[ i ] );
 					}
 				} else {
 					// -...
@@ -1692,16 +1761,19 @@ namespace po {
 						// -
 						good = false;
 						error();
-						err() << "invalid argument; ignoring single hyphen\n";
+						err() << "invalid argument";
+						ignoring( '-' );
+						err() << '\n';
 					} else if( argv[ i ][ 1 ] == '-' ) {
 						if( argv[ i ][ 2 ] == '\0' ) {
 							// --
 							if( !has_unnamed ) {
 								good = false;
 								error_unnamed_arguments( argv[ i ] );
+								err() << '\n';
 							} else {
 								while( ++i < argc ) {
-									good &= parse( unnamed, argv[ i ], argv[ i ] );
+									good &= parse_argument( unnamed, argv[ i ], argv[ i ] );
 								}
 								break;
 							}
@@ -1714,6 +1786,8 @@ namespace po {
 							if( opt == m_options.end() ) {
 								good = false;
 								error_unrecognized_option( argv[ i ] );
+								check_spelling( argv[ i ] );
+								err() << '\n';
 							} else {
 								good &= extract_argument( opt, argc, argv, i, last - argv[ i ] );
 							}
@@ -1724,6 +1798,8 @@ namespace po {
 						if( head == m_options.end() ) {
 							good = false;
 							error_unrecognized_option( argv[ i ] );
+							check_spelling( argv[ i ][ 1 ] );
+							err() << '\n';
 						} else if( head->second.get_type() == void_ ) {
 							// -fgh
 							char c;
@@ -1732,21 +1808,25 @@ namespace po {
 									good = false;
 									err() << "invalid character \'" << c << "\'";
 									ignoring( &argv[ i ][ j ] );
+									err() << '\n';
 									break;
 								}
 								const auto opt = find_abbreviation( c );
 								if( opt == m_options.end() ) {
 									good = false;
 									error_unrecognized_option( c );
+									check_spelling( c );
+									err() << '\n';
 									continue;
 								}
 								if( opt->second.get_type() != void_ ) {
 									good = false;
 									err() << "non-void options not allowed in option packs";
 									ignoring( c );
+									err() << '\n';
 									continue;
 								}
-								good &= parse( opt, c );
+								good &= parse_argument( opt, c );
 							}
 						} else {
 							good &= extract_argument( head, argc, argv, i, 2 );
