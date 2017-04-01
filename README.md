@@ -120,9 +120,9 @@ Up until now, we were missing the infamous `--help` command. While *ProgramOptio
 
 But how do we accomplish printing the options whenever there's a `--help` command? This is where callbacks come into play. Callbacks are functions that we supply to *ProgramOptions.hxx* to call. After we handed them over, we don't need to worry about invoking them as that's entirely *ProgramOptions.hxx*' job. In the code below, we pass a [lambda](http://en.cppreference.com/w/cpp/language/lambda) whose sole purpose is to print the options. Whenever the corresponding option occurs (`--help` in this case), the callback is invoked.
 
-The *unnamed parameter* `""` is used to process nameless arguments. Consider the command line: `gcc -O2 a.c b.c` Here, unlike `-O2`, `a.c` and `b.c` are not named and neither do they start with a hyphen. They are unnamed parameters but they are important nevertheless. In *ProgramOptions.hxx*, you'd treat them like any other option. They only differ in their [default settings](#defaults).
+The *unnamed parameter* `""` is used to process *non-option arguments*. Consider the command line: `gcc -O2 a.c b.c` Here, unlike `-O2`, `a.c` and `b.c` do not belong to an option and neither do they start with a hyphen. They are non-option arguments but they are important nevertheless. In *ProgramOptions.hxx*, you treat the unnamed parameter like any other option. They only differ in their [default settings](#defaults).
 
-Note that, in order to pass arguments starting with a hyphen to the unnamed parameter, you'll have to pass `--` first, signifying that all further arguments should be passed right to the unnamed parameter without attempting to interpret them.
+Note that, in order to pass arguments starting with a hyphen to the unnamed parameter, you'll have to pass `--` first, signifying that all further arguments are non-option arguments and that they should be passed right to the unnamed parameter without attempting to interpret them.
 ```cpp
 #include <ProgramOptions.hxx>
 #include <iostream>
@@ -147,7 +147,7 @@ int main( int argc, char** argv ) {
         .callback( [ & ]{ std::cout << parser << '\n'; } );
                                 // callbacks get invoked when the option occurs
 
-    parser[ "" ]                // the unnamed parameter is used for direct arguments, i.e. gcc a.c b.c
+    parser[ "" ]                // the unnamed parameter is used for non-option arguments, i.e. gcc a.c b.c
         // .type( po::string )  // redundant; default for the unnamed parameter
         // .multi()             // redundant; default for the unnamed parameter
         .callback( [ & ]( std::string const& x ){ std::cout << "processed \'" << x << "\' successfully!\n"; } );

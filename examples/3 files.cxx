@@ -24,7 +24,7 @@ int main( int argc, char** argv ) {
 		.callback( [ & ]{ std::cout << parser << '\n'; } );
 								// callbacks get invoked when the option occurs
 
-	parser[ "" ]				// the unnamed parameter is used for direct arguments, i.e. gcc a.c b.c
+	parser[ "" ]				// the unnamed parameter is used for non-option arguments, i.e. gcc a.c b.c
 		// .type( po::string )	// redundant; default for the unnamed parameter
 		// .multi()				// redundant; default for the unnamed parameter
 		.callback( [ & ]( std::string const& x ){ std::cout << "processed \'" << x << "\' successfully!\n"; } );

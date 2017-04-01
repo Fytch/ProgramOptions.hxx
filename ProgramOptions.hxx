@@ -1640,9 +1640,9 @@ namespace po {
 			err() << '\'';
 		}
 		template< typename arg_t >
-		static void error_unnamed_arguments( arg_t&& arg ) {
+		static void error_nonoption_arguments( arg_t&& arg ) {
 			error();
-			err() << "unnamed arguments not allowed";
+			err() << "non-option arguments not allowed";
 			ignoring( arg );
 		}
 		template< typename arg_t >
@@ -1750,7 +1750,7 @@ namespace po {
 				if( argv[ i ][ 0 ] != '-' || ( has_unnamed && dashed_non_option( argv[ i ] ) ) ) {
 					if( !has_unnamed ) {
 						good = false;
-						error_unnamed_arguments( argv[ i ] );
+						error_nonoption_arguments( argv[ i ] );
 						err() << '\n';
 					} else {
 						good &= parse_argument( unnamed, argv[ i ], argv[ i ] );
@@ -1769,7 +1769,7 @@ namespace po {
 							// --
 							if( !has_unnamed ) {
 								good = false;
-								error_unnamed_arguments( argv[ i ] );
+								error_nonoption_arguments( argv[ i ] );
 								err() << '\n';
 							} else {
 								while( ++i < argc ) {
