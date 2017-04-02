@@ -1782,14 +1782,20 @@ namespace po {
 							char* first = &argv[ i ][ 2 ];
 							char* last = first;
 							for( ; valid_designator_character( *last ); ++last );
-							const auto opt = m_options.find( std::string{ first, last } );
-							if( opt == m_options.end() ) {
+							if( first == last ) {
 								good = false;
 								error_unrecognized_option( argv[ i ] );
-								check_spelling( argv[ i ] );
 								err() << '\n';
 							} else {
-								good &= extract_argument( opt, argc, argv, i, last - argv[ i ] );
+								const auto opt = m_options.find( std::string{ first, last } );
+								if( opt == m_options.end() ) {
+									good = false;
+									error_unrecognized_option( argv[ i ] );
+									check_spelling( argv[ i ] );
+									err() << '\n';
+								} else {
+									good &= extract_argument( opt, argc, argv, i, last - argv[ i ] );
+								}
 							}
 						}
 					} else {
