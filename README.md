@@ -205,7 +205,7 @@ int main( int argc, char** argv ) {
         // .type( po::string )  // redundant; default for the unnamed parameter
         // .multi()             // redundant; default for the unnamed parameter
         .callback( [ & ]( std::string const& x ){ std::cout << "processed \'" << x << "\' successfully!\n"; } );
-                                // as .get_type() == po::string, the callback may either take a std::string
+                                // as .get_type() == po::string, the callback may take a std::string
 
     // parsing returns false if at least one error has occurred
     if( !parser( argc, argv ) ) {
