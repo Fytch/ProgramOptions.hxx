@@ -173,6 +173,54 @@ namespace po {
 	}
 #endif // PROGRAMOPTIONS_SILENT
 
+	struct error_t {
+		friend std::ostream& operator<<( std::ostream& stream, error_t const& /* object */ ) { // -Wunused-parameter
+			return stream << red << "error: ";
+		}
+	};
+	inline error_t error() {
+		return {};
+	}
+
+	struct suggestion_t {
+		std::string const& what;
+
+		friend std::ostream& operator<<( std::ostream& stream, suggestion_t const& object ) {
+			stream << "; did you mean \'";
+			stream << white << object.what;
+			stream << "\'?";
+			return stream;
+		}
+	};
+	inline suggestion_t suggest( std::string const& what ) {
+		return { what };
+	}
+
+	template< typename arg_t >
+	struct ignore_t {
+		arg_t const& arg;
+
+		friend std::ostream& operator<<( std::ostream& stream, ignore_t const& object ) {
+			stream << "; ignoring \'";
+			stream << white << object.arg;
+			stream << '\'';
+			return stream;
+		}
+	};
+	template< typename arg_t >
+	ignore_t< arg_t > ignoring( arg_t const& arg ) {
+		return { arg };
+	}
+
+	template< typename arg_t >
+	void error_nonoption_arguments( arg_t const& arg ) {
+		err() << error() << "non-option arguments not allowed" << ignoring( arg );
+	}
+	template< typename arg_t >
+	void error_unrecognized_option( arg_t const& arg ) {
+		err() << error() << "unrecognized option" << ignoring( arg );
+	}
+
 	// Compatibility stuff for the lack of C++14 support
 	template< typename T, typename... args_t >
 	std::unique_ptr< T > make_unique( args_t&&... args ) {
@@ -211,9 +259,11 @@ namespace po {
 	using make_index_sequence = make_integer_sequence< std::size_t, N >;
 	// End of compatibility stuff
 
-	inline std::size_t damerau_levenshtein( char const* a, char const* b, std::size_t i, std::size_t j, std::size_t cutoff = std::numeric_limits< std::size_t >::max(), std::size_t distance = 0 ) {
-		const auto comp = []( char lhs, char rhs ){ return std::tolower( lhs ) == std::tolower( rhs ); };
+	inline bool case_insensitive_eq( char x, char y ) {
+		return std::tolower( x ) == std::tolower( y );
+	}
 
+	inline std::size_t damerau_levenshtein( char const* a, char const* b, std::size_t i, std::size_t j, std::size_t cutoff = std::numeric_limits< std::size_t >::max(), std::size_t distance = 0 ) {
 		if( distance >= cutoff )
 			return cutoff;
 		if( i == 0 )
@@ -225,9 +275,9 @@ namespace po {
 				damerau_levenshtein( a, b, i - 1, j, cutoff, distance + 1 ),
 				damerau_levenshtein( a, b, i, j - 1, cutoff, distance + 1 )
 			),
-			damerau_levenshtein( a, b, i - 1, j - 1, cutoff, distance + !comp( a[ i - 1 ], b[ j - 1 ] ) )
+			damerau_levenshtein( a, b, i - 1, j - 1, cutoff, distance + !case_insensitive_eq( a[ i - 1 ], b[ j - 1 ] ) )
 		);
-		if( i >= 2 && j >= 2 && comp( a[ i - 1 ], b[ j - 2 ] ) && comp( a[ i - 2 ], b[ j - 1 ] ) )
+		if( i >= 2 && j >= 2 && case_insensitive_eq( a[ i - 1 ], b[ j - 2 ] ) && case_insensitive_eq( a[ i - 2 ], b[ j - 1 ] ) )
 			result = std::min( result, damerau_levenshtein( a, b, i - 2, j - 2, cutoff, distance + 1 ) );
 		return result;
 	}
@@ -281,46 +331,39 @@ namespace po {
 	inline char const* vt2str( value_type type ) {
 		return value_type_strings[ enum2int( type ) ];
 	}
+
+	using void_t = void;
+	using string_t = std::string;
+	using i32_t = std::int32_t;
+	using i64_t = std::int64_t;
+	using u32_t = std::uint32_t;
+	using u64_t = std::uint64_t;
+	using f32_t = float;
+	using f64_t = double;
+
 	namespace detail {
 		template< value_type type >
 		struct vt2type_impl {
 		};
 		template<>
-		struct vt2type_impl< void_ > {	using type = void;			};
+		struct vt2type_impl< void_ > { using type = void_t; };
 		template<>
-		struct vt2type_impl< string > {	using type = std::string;	};
+		struct vt2type_impl< string > { using type = string_t; };
 		template<>
-		struct vt2type_impl< i32 > {	using type = std::int32_t;	};
+		struct vt2type_impl< i32 > { using type = i32_t; };
 		template<>
-		struct vt2type_impl< i64 > {	using type = std::int64_t;	};
+		struct vt2type_impl< i64 > { using type = i64_t; };
 		template<>
-		struct vt2type_impl< u32 > {	using type = std::uint32_t;	};
+		struct vt2type_impl< u32 > { using type = u32_t; };
 		template<>
-		struct vt2type_impl< u64 > {	using type = std::uint64_t;	};
+		struct vt2type_impl< u64 > { using type = u64_t; };
 		template<>
-		struct vt2type_impl< f32 > {	using type = float;			};
+		struct vt2type_impl< f32 > { using type = f32_t; };
 		template<>
-		struct vt2type_impl< f64 > {	using type = double;		};
+		struct vt2type_impl< f64 > { using type = f64_t; };
 	}
 	template< value_type type >
 	using vt2type = typename detail::vt2type_impl< type >::type;
-
-	using void_t = vt2type< void_ >;
-	using string_t = vt2type< string >;
-	using i32_t = vt2type< i32 >;
-	using i64_t = vt2type< i64 >;
-	using u32_t = vt2type< u32 >;
-	using u64_t = vt2type< u64 >;
-	using f32_t = vt2type< f32 >;
-	using f64_t = vt2type< f64 >;
-
-	enum class error_code {
-		none,
-		argument_expected,
-		no_argument_expected,
-		conversion_error,
-		out_of_range
-	};
 
 	template< typename T >
 	T pow( T base, unsigned exp ) {
@@ -352,6 +395,14 @@ namespace po {
 	struct log10< 0, true >;
 	template< unsigned i >
 	struct log10< i, true > : public std::integral_constant< unsigned, 0 > {
+	};
+
+	enum class error_code {
+		none,
+		argument_expected,
+		no_argument_expected,
+		conversion_error,
+		out_of_range
 	};
 
 	template< typename T >
@@ -425,7 +476,7 @@ namespace po {
 		}
 		template< typename forward_iterator_t, typename... tail_t >
 		bool expect_impl( forward_iterator_t& first, forward_iterator_t last, char head, tail_t const&... tail ) {
-			return first != last && std::tolower( *first ) == std::tolower( head ) && expect_impl( ++first, last, tail... );
+			return first != last && case_insensitive_eq( *first, head ) && expect_impl( ++first, last, tail... );
 		}
 	}
 	template< typename forward_iterator_t, typename... args_t >
@@ -1280,7 +1331,6 @@ namespace po {
 			PROGRAMOPTIONS_ASSERT( i < size(), "get: index out of range" );
 			return begin()[ i ];
 		}
-		// TODO: strictly speaking, this is implementation defined
 		value const& get_or( value const& def ) const {
 			if( available() )
 				return get();
@@ -1548,17 +1598,19 @@ namespace po {
 
 	private:
 		std::unique_ptr< value_vector_base > make_vector() const {
-			switch( ( get_type() == void_ ) | is_single() << 1 ) {
-			case false | false << 1:
-				return make_unique< value_vector< false, false > >();
-			case false | true << 1:
-				return make_unique< value_vector< false, true > >();
-			case true | false << 1:
-				return make_unique< value_vector< true, false > >();
-			case true | true << 1:
-				return make_unique< value_vector< true, true > >();
+			const bool arg1 = ( get_type() == void_ );
+			const bool arg2 = is_single();
+			if( arg1 ) {
+				if( arg2 )
+					return make_unique< value_vector< true, true > >();
+				else
+					return make_unique< value_vector< true, false > >();
+			} else {
+				if( arg2 )
+					return make_unique< value_vector< false, true > >();
+				else
+					return make_unique< value_vector< false, false > >();
 			}
-			return {}; // -Wreturn-type
 		}
 
 	public:
@@ -1588,11 +1640,6 @@ namespace po {
 			return iter;
 		}
 
-		void suggest( std::string const& what ) {
-			err() << "; did you mean \'";
-			err() << white << what;
-			err() << "\'?";
-		}
 		void check_spelling( char single_char_option ) {
 			if( !std::isalpha( single_char_option ) )
 				return;
@@ -1601,7 +1648,7 @@ namespace po {
 			else // if( std::isupper( single_char_option ) )
 				single_char_option = std::tolower( single_char_option );
 			if( find_abbreviation( single_char_option ) != m_options.end() )
-				suggest( { '-', single_char_option } );
+				err() << suggest( std::string{ '-', single_char_option } );
 		}
 		void check_spelling( char const* multi_char_option ) {
 			assert( multi_char_option[ 0 ] == '-' && multi_char_option[ 1 ] == '-' && multi_char_option[ 2 ] != '\0' );
@@ -1628,36 +1675,14 @@ namespace po {
 				}
 			}
 			if( min_distance < distance_cutoff )
-				suggest( std::string( "--" ) + nearest_option->first );
-		}
-		static void error() {
-			err() << red << "error: ";
-		}
-		template< typename arg_t >
-		static void ignoring( arg_t const& arg ) {
-			err() << "; ignoring \'";
-			err() << white << arg;
-			err() << '\'';
-		}
-		template< typename arg_t >
-		static void error_nonoption_arguments( arg_t&& arg ) {
-			error();
-			err() << "non-option arguments not allowed";
-			ignoring( arg );
-		}
-		template< typename arg_t >
-		void error_unrecognized_option( arg_t const& arg ) {
-			error();
-			err() << "unrecognized option";
-			ignoring( arg );
+				err() << suggest( std::string( "--" ) + nearest_option->first );
 		}
 		template< typename expression_t, typename... args_t >
 		bool parse_argument( options_t::iterator option, expression_t const& expression, args_t&&... args ) const {
 			const error_code code = option->second.parse( std::forward< args_t >( args )... );
 			if( code == error_code::none )
 				return true;
-			error();
-			err() << "option \'";
+			err() << error() << "option \'";
 			err() << blue << option->first;
 			err() << "\' ";
 			switch( code ) {
@@ -1673,8 +1698,7 @@ namespace po {
 				default: // -Wswitch
 					;
 			}
-			ignoring( expression );
-			err() << '\n';
+			err() << ignoring( expression ) << '\n';
 			return false;
 		}
 		bool dashed_non_option( char* arg ) {
@@ -1760,10 +1784,7 @@ namespace po {
 					if( argv[ i ][ 1 ] == '\0' ) {
 						// -
 						good = false;
-						error();
-						err() << "invalid argument";
-						ignoring( '-' );
-						err() << '\n';
+						err() << error() << "invalid argument" << ignoring( '-' ) << '\n';
 					} else if( argv[ i ][ 1 ] == '-' ) {
 						if( argv[ i ][ 2 ] == '\0' ) {
 							// --
@@ -1812,9 +1833,7 @@ namespace po {
 							for( std::size_t j = 1; ( c = argv[ i ][ j ] ) != '\0'; ++j ) {
 								if( !std::isprint( c ) || c == '-' ) {
 									good = false;
-									err() << "invalid character \'" << c << "\'";
-									ignoring( &argv[ i ][ j ] );
-									err() << '\n';
+									err() << "invalid character \'" << c << "\'" << ignoring( &argv[ i ][ j ] ) << '\n';
 									break;
 								}
 								const auto opt = find_abbreviation( c );
@@ -1827,9 +1846,7 @@ namespace po {
 								}
 								if( opt->second.get_type() != void_ ) {
 									good = false;
-									err() << "non-void options not allowed in option packs";
-									ignoring( c );
-									err() << '\n';
+									err() << "non-void options not allowed in option packs" << ignoring( c ) << '\n';
 									continue;
 								}
 								good &= parse_argument( opt, c );
