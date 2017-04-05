@@ -42,8 +42,12 @@
 	#endif // PROGRAMOPTIONS_NO_EXCEPTIONS
 #endif // NDEBUG
 
-#ifndef PROGRAMOPTIONS_NO_COLORS
-	#if defined( _WIN32 ) || defined( WIN32 )
+#if defined( PROGRAMOPTIONS_WINDOWS ) && defined( PROGRAMOPTIONS_ANSI )
+	#error Please define either PROGRAMOPTIONS_WINDOWS or PROGRAMOPTIONS_ANSI
+#endif
+
+#if !defined( PROGRAMOPTIONS_NO_COLORS ) && !defined( PROGRAMOPTIONS_WINDOWS ) && !defined( PROGRAMOPTIONS_ANSI )
+	#if defined( WIN32 ) || defined( _WIN32 ) || defined( _WIN64 ) || defined( __WIN32__ ) || defined( __TOS_WIN__ ) || defined( __WINDOWS__ )
 		#define PROGRAMOPTIONS_WINDOWS
 		#ifndef WIN32_LEAN_AND_MEAN
 			#define WIN32_LEAN_AND_MEAN 1
