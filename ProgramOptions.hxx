@@ -1,3 +1,11 @@
+/*
+ *	ProgramOptions.hxx - a single-header program options parsing library for C++11
+ *	Copyright (C) 2017  Josua Rieder (josua.rieder1996@gmail.com)
+ *	Distributed under the MIT License.
+ *	For further information, see the enclosed file LICENSE.txt or
+ *	visit https://opensource.org/licenses/mit-license.html
+ */
+
 #ifndef PROGRAMOPTIONS_HXX_INCLUDED
 #define PROGRAMOPTIONS_HXX_INCLUDED
 
