@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/Fytch/ProgramOptions.hxx.svg?branch=master)](https://travis-ci.org/Fytch/ProgramOptions.hxx)
+
 # Contents
 - [Getting started](#getting-started)
 - [Design goals](#design-goals)

@@ -1,10 +1,19 @@
 language: cpp
+
+dist: trusty
+sudo: false
+
 compiler:
-  - clang
   - gcc
+  - clang
+
 script:
+  - uname -a
+  - $CXX --version
+
   - mkdir bin
   - cd bin
   - cmake .. -DCMAKE_BUILD_TYPE=DEBUG
-  - make
+  - cmake --build .
+
   - ./Test
