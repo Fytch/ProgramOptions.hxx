@@ -1,0 +1,10 @@
+language: cpp
+compiler:
+  - clang
+  - gcc
+script:
+  - mkdir bin
+  - cd bin
+  - cmake .. -DCMAKE_BUILD_TYPE=DEBUG
+  - make
+  - ./Test
