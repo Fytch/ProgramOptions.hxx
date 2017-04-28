@@ -1,4 +1,4 @@
-language: cpp
+language: generic
 
 dist: trusty
 sudo: required
@@ -34,7 +34,7 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.6
+            - llvm-toolchain-trusty-3.6
           packages:
             - clang-3.6
       env: COMPILER=clang++-3.6
@@ -43,7 +43,7 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.7
+            - llvm-toolchain-trusty-3.7
           packages:
             - clang-3.7
       env: COMPILER=clang++-3.7
@@ -52,7 +52,7 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.8
+            - llvm-toolchain-trusty-3.8
           packages:
             - clang-3.8
       env: COMPILER=clang++-3.8
@@ -61,7 +61,7 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.9
+            - llvm-toolchain-trusty-3.9
           packages:
             - clang-3.9
       env: COMPILER=clang++-3.9
@@ -70,7 +70,7 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-4.0
+            - llvm-toolchain-trusty-4.0
           packages:
             - clang-4.0
       env: COMPILER=clang++-4.0
@@ -78,7 +78,7 @@ matrix:
 script:
   - uname -a
   - cmake --version
-  - $CXX --version
+  - $COMPILER --version
 
   - mkdir bin
   - cd bin
