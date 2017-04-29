@@ -3,6 +3,9 @@ language: cpp
 dist: trusty
 sudo: required
 
+notifications:
+  email: false
+
 matrix:
   include:
     - compiler: gcc
