@@ -1777,7 +1777,7 @@ namespace po {
 			if( m_program_name == nullptr )
 				m_program_name = argv[ 0 ];
 			else
-				++m_program_name; // skip the dash
+				++m_program_name; // skip the slash
 			const auto unnamed = m_options.find( "" );
 			const bool has_unnamed = unnamed != m_options.end();
 			for( int i = 1; i < argc; ++i ) {
@@ -1850,7 +1850,7 @@ namespace po {
 							for( std::size_t j = 1; ( c = argv[ i ][ j ] ) != '\0'; ++j ) {
 								if( !std::isprint( c ) || c == '-' ) {
 									good = false;
-									err() << "invalid character \'" << c << "\'" << ignoring( &argv[ i ][ j ] ) << '\n';
+									err() << error() << "invalid character \'" << c << "\'" << ignoring( &argv[ i ][ j ] ) << '\n';
 									break;
 								}
 								const auto opt = find_abbreviation( c );
@@ -1863,7 +1863,7 @@ namespace po {
 								}
 								if( opt->second.get_type() != void_ ) {
 									good = false;
-									err() << "non-void options not allowed in option packs" << ignoring( c ) << '\n';
+									err() << error() << "non-void options not allowed in option packs" << ignoring( c ) << '\n';
 									continue;
 								}
 								good &= parse_argument( opt, c );
