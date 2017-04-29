@@ -11,28 +11,50 @@ TEST_CASE( "errors", "[ProgramOptions]" ) {
 		.multi();
 	auto&& unnamed = parser[ "" ];
 
-	SECTION( "Scenario 1" ) {
+	SECTION( "parsing '--$'" ) {
 		const arg_provider A {
 			"/Test",
 			"--$"
 		};
 		CHECK( !parser( A.argc, A.argv ) );
+		CHECK( !sum.was_set() );
 		CHECK( !unnamed.was_set() );
 	}
-	SECTION( "Scenario 2" ) {
+	SECTION( "parsing '---'" ) {
 		const arg_provider A {
 			"/Test",
 			"---"
 		};
 		CHECK( !parser( A.argc, A.argv ) );
+		CHECK( !sum.was_set() );
 		CHECK( !unnamed.was_set() );
 	}
-	SECTION( "Scenario 3" ) {
+	SECTION( "parsing '-- sum=42'" ) {
 		const arg_provider A {
 			"/Test",
 			"-- sum=42"
 		};
 		CHECK( !parser( A.argc, A.argv ) );
+		CHECK( !sum.was_set() );
+		CHECK( !unnamed.was_set() );
+	}
+	SECTION( "parsing '--sum=garbage'" ) {
+		const arg_provider A {
+			"/Test",
+			"--sum=garbage"
+		};
+		CHECK( !parser( A.argc, A.argv ) );
+		CHECK( !sum.was_set() );
+		CHECK( !unnamed.was_set() );
+	}
+	SECTION( "parsing '--sum garbage'" ) {
+		const arg_provider A {
+			"/Test",
+			"--sum",
+			"garbage"
+		};
+		CHECK( !parser( A.argc, A.argv ) );
+		CHECK( !sum.was_set() );
 		CHECK( !unnamed.was_set() );
 	}
 }

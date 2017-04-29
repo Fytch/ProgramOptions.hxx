@@ -1795,8 +1795,13 @@ namespace po {
 					// -...
 					if( argv[ i ][ 1 ] == '\0' ) {
 						// -
-						good = false;
-						err() << error() << "invalid argument" << ignoring( '-' ) << '\n';
+						if( !has_unnamed ) {
+							good = false;
+							error_nonoption_arguments( argv[ i ] );
+							err() << '\n';
+						} else {
+							good &= parse_argument( unnamed, argv[ i ], argv[ i ] );
+						}
 					} else if( argv[ i ][ 1 ] == '-' ) {
 						if( argv[ i ][ 2 ] == '\0' ) {
 							// --

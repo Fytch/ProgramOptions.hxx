@@ -72,6 +72,7 @@ TEST_CASE( "string", "[ProgramOptions]" ) {
 			"/Test",
 			"-a",
 			"foo",
+			"-",
 			"bar",
 			"-foo",
 			"--",
@@ -87,10 +88,11 @@ TEST_CASE( "string", "[ProgramOptions]" ) {
 		CHECK( c.get().string == "test" );
 		REQUIRE( f.count() == 1 );
 		CHECK( f.get().string == "oo" );
-		REQUIRE( unnamed.count() == 4 );
-		CHECK( unnamed.get( 0 ).string == "bar" );
-		CHECK( unnamed.get( 1 ).string == "-flto" );
-		CHECK( unnamed.get( 2 ).string == "--" );
-		CHECK( unnamed.get( 3 ).string == "-fmax-errors=25" );
+		REQUIRE( unnamed.count() == 5 );
+		CHECK( unnamed.get( 0 ).string == "-" );
+		CHECK( unnamed.get( 1 ).string == "bar" );
+		CHECK( unnamed.get( 2 ).string == "-flto" );
+		CHECK( unnamed.get( 3 ).string == "--" );
+		CHECK( unnamed.get( 4 ).string == "-fmax-errors=25" );
 	}
 }

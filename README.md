@@ -38,17 +38,11 @@ Using this sample is only recommended if you are already somewhat familiar with 
 ## Features
 ![Screenshot](https://raw.githubusercontent.com/Fytch/ProgramOptions.hxx/master/assets/screenshot.png)
 
-- *Almost*<sup>1</sup> compliant with the [GNU Program Argument Syntax Conventions](https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html)
+- Fully compliant with the [GNU Program Argument Syntax Conventions](https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html)
 - Automatic help screen generation
 - Automatic error handling
 - Suggestions for wrongly spelled options
 - Colored console output (can be turned off with [`#define PROGRAMOPTIONS_NO_COLORS`](#define-programoptions_no_colors))
-
-<sup>1</sup> *ProgramOptions.hxx* is generally more permissive and meets all but the following requirement:
-
-> - A token consisting of a single hyphen character is interpreted as an ordinary non-option argument. By convention, it is used to specify input from or output to the standard input and output streams.
-
-A single hyphen produces an error message and is being ignored in *ProgramOptions.hxx*.
 
 ### Syntax
 *ProgramOptions.hxx* adheres to this syntax:
