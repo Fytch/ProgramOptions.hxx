@@ -1,6 +1,8 @@
+# ProgramOptions.hxx
+
 [![Build Status](https://travis-ci.org/Fytch/ProgramOptions.hxx.svg?branch=master)](https://travis-ci.org/Fytch/ProgramOptions.hxx)
 
-# Contents
+## Contents
 - [Getting started](#getting-started)
 - [Design goals](#design-goals)
 - [Features](#features)
@@ -16,7 +18,7 @@
 - [Third-party libraries](#third-party-libraries)
 - [License](#license)
 
-# Getting started
+## Getting started
 It is highly recommended that you at least briefly skim through the chapters [**Integration**](#integration) and [**Usage**](#usage) before starting.
 
 The quickest way to get started is to download *ProgramOptions.hxx* as well as one of the samples and go from there.
@@ -27,13 +29,13 @@ The default choice. Using *ProgramOptions.hxx* incorrectly or failing to meet a 
 ### `sample_noexcept.cxx`
 Using this sample is only recommended if you are already somewhat familiar with *ProgramOptions.hxx*. Incorrect programs will crash without any messages unless your STL implementation does so when [`assert`ions](http://en.cppreference.com/w/cpp/error/assert) fail.
 
-# Design goals
+## Design goals
 - **Non-intrusive**. Unlike other program option libraries, such as [*Boost.Program_options*](http://www.boost.org/doc/libs/1_63_0/doc/html/program_options.html), *ProgramOptions.hxx* requires neither additional library binaries nor integration into the build process. Just drop in the header, include it and you're all set. *ProgramOptions.hxx* doesn't force you to enable exceptions or RTTI and runs just fine with `-fno-rtti -fno-exceptions` (the latter requires you to [`#define PROGRAMOPTIONS_NO_EXCEPTIONS`](#define-programoptions_no_exceptions) prior to including the header, though).
 - **Intuitive**. *ProgramOptions.hxx* is designed to feel smooth and blend in well with other modern C++11 code.
 - **Correct**. Extensive unit tests and runtime checks contribute to more correct software, both on the side of the user and the developer of *ProgramOptions.hxx*.
 - **Permissive**. The [MIT License](https://tldrlegal.com/license/mit-license) under which *ProgramOptions.hxx* is published grants unrestricted freedom.
 
-# Features
+## Features
 ![Screenshot](https://raw.githubusercontent.com/Fytch/ProgramOptions.hxx/master/assets/screenshot.png)
 
 - *Almost*<sup>1</sup> compliant with the [GNU Program Argument Syntax Conventions](https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html)
@@ -48,7 +50,7 @@ Using this sample is only recommended if you are already somewhat familiar with 
 
 A single hyphen produces an error message and is being ignored in *ProgramOptions.hxx*.
 
-## Syntax
+### Syntax
 *ProgramOptions.hxx* adheres to this syntax:
 
 ```
@@ -82,17 +84,17 @@ Both kinds of options may require arguments. The syntax for providing arguments 
 
 <sup>2</sup> Note that this syntax only works for arguments not starting with a letter, a hyphen or an underscore as these characters would be interpreted as part of the option's name.
 
-# Integration
+## Integration
 *ProgramOptions.hxx* is very easy to integrate. After downloading the header file, all that it takes is a simple:
 ```cpp
 #include "ProgramOptions.hxx"
 ```
 Don't forget to compile with C++11 enabled, i.e. with `-std=c++11`.
 
-# Usage
+## Usage
 Using *ProgramOptions.hxx* is straightforward; we'll explain it by means of examples. All examples shown here and more can be found in the `examples` directory, all of which are well-documented.
 
-## Example 1 (`abbreviation`, `u32`, `available`, `get`)
+### Example 1 (`abbreviation`, `u32`, `available`, `get`)
 The following snippet is the complete source code for a simple program expecting an integer optimization level.
 ```cpp
 #include <ProgramOptions.hxx>
@@ -124,7 +126,7 @@ optimization level set to 255
 $ ./optimization.exe -O3 --optimization 1e2
 optimization level set to 100
 ```
-## Example 2 (`fallback`, `was_set`, `string`, `multi`)
+### Example 2 (`fallback`, `was_set`, `string`, `multi`)
 Let's expand on the previous code. We want it to assume a certain value for the option `optimization` even if the user sets none. This can be achieved through the `.fallback(...)` method. After parsing, the method `.was_set()` tells us whether the option was actually set by the user or fell back on the default value.
 
 Furthermore, we want to implement the option `-I` to let the user specify include paths. Paths should not be converted to any arithmetic type so we simply set the type to `po::string`.
@@ -171,7 +173,7 @@ include paths (2):
         /usr/include/bar
 ```
 
-## Example 3 (`description`, `callback`, unnamed parameter)
+### Example 3 (`description`, `callback`, unnamed parameter)
 Up until now, we were missing the infamous `--help` command. While *ProgramOptions.hxx* will take over the tedious work of neatly formatting and displaying the options, it doesn't add a `--help` command automatically. That's up to us and so is adding an apt description for every available option. We may do so by use of the `.description(...)` method.
 
 But how do we accomplish printing the options whenever there's a `--help` command? This is where callbacks come into play. Callbacks are functions that we supply to *ProgramOptions.hxx* to call. After we handed them over, we don't need to worry about invoking them as that's entirely *ProgramOptions.hxx*' job. In the code below, we pass a [lambda](http://en.cppreference.com/w/cpp/language/lambda) whose sole purpose is to print the options. Whenever the corresponding option occurs (`--help` in this case), the callback is invoked.
@@ -241,16 +243,16 @@ Available options:
 ```
 In action:
 ```
-$ ./files.exe -I ./include foo.cxx bar.cxx -O3 -- "-qux.cxx"
+$ ./files.exe -I ./include foo.cxx bar.cxx -O3 -- --qux.cxx
 processed 'foo.cxx' successfully!
 processed 'bar.cxx' successfully!
-processed '-qux.cxx' successfully!
+processed '--qux.cxx' successfully!
 processed files: 3
 optimization level (manual) = 3
 include paths (1):
         ./include
 ```
-## Example 4 (more `callback`s, more `fallback`s, `f64`, `to_vector`)
+### Example 4 (more `callback`s, more `fallback`s, `f64`, `to_vector`)
 In this example, we will employ already known mechanics but lay the focus on their versatility.
 
 #### Let's start with callbacks:
@@ -323,7 +325,7 @@ successfully parsed 12 which equals 12
 successfully parsed NaN which equals nan
 ( + 12 nan ) = nan
 ```
-# Defaults
+## Defaults
 This small table helps clarifying the defaults for the different kinds of options.
 
 |Name                 |`"multi-char"`       |`"x"`                |`""` *(unnamed parameter)*|
@@ -332,7 +334,7 @@ This small table helps clarifying the defaults for the different kinds of option
 |`.type`              |`po::void_`          |`po::void_`          |`po::string`         |
 |`.single` / `.multi` |`.single`            |`.single`            |`.multi`             |
 
-# Flags
+## Flags
 All flags have to be `#define`d before including *ProgramOptions.hxx*. Different translation units may include *ProgramOptions.hxx* using different flags.
 
 ### `#define PROGRAMOPTIONS_SILENT`
@@ -353,8 +355,8 @@ Disables colored output. On Windows, *ProgramOptions.hxx* uses the WinAPI (i.e. 
 
 :exclamation: This flag must not vary across different translation units in order to not violate C++' [one definition rule (ODR)](http://en.cppreference.com/w/cpp/language/definition).
 
-# Third-party libraries
+## Third-party libraries
 - [**Catch**](https://github.com/philsquared/Catch) for unit testing.
 
-# License
+## License
 *ProgramOptions.hxx* is licensed under the [MIT License](https://tldrlegal.com/license/mit-license). See the enclosed [LICENSE.txt](LICENSE.txt) for more information.
