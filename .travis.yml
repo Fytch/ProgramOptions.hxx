@@ -83,6 +83,12 @@ script:
   - cmake --version
   - $COMPILER --version
 
+  - mkdir bin_noexcept
+  - cd bin_noexcept
+  - cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_CXX_COMPILER=$COMPILER -DPROGRAMOPTIONS_BUILD_TEST=OFF -DPROGRAMOPTIONS_NO_EXCEPTIONS=ON
+  - cmake --build .
+  - cd ..
+
   - mkdir bin
   - cd bin
   - cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_CXX_COMPILER=$COMPILER
