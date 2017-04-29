@@ -15,7 +15,7 @@ TEST_CASE( "exceptions", "[ProgramOptions]" ) {
 		.multi();
 	SECTION( "designators" ) {
 		CHECK_THROWS_AS( parser[ "-foo" ], std::logic_error );
-		CHECK_THROWS_AS( parser[ "bar32" ], std::logic_error );
+		CHECK_NOTHROW( parser[ "bar32" ] );
 		CHECK_THROWS_AS( parser[ "sepa rated" ], std::logic_error );
 		CHECK_THROWS_AS( parser[ " " ], std::logic_error );
 		CHECK_NOTHROW( parser[ "foo_BAR" ] );

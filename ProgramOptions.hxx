@@ -1652,22 +1652,22 @@ namespace po {
 			return iter;
 		}
 
-		void check_spelling( char single_char_option ) {
-			if( !std::isalpha( single_char_option ) )
+		void check_spelling( char short_option ) {
+			if( !std::isalpha( short_option ) )
 				return;
-			if( std::islower( single_char_option ) )
-				single_char_option = std::toupper( single_char_option );
-			else // if( std::isupper( single_char_option ) )
-				single_char_option = std::tolower( single_char_option );
-			if( find_abbreviation( single_char_option ) != m_options.end() )
-				err() << suggest( std::string{ '-', single_char_option } );
+			if( std::islower( short_option ) )
+				short_option = std::toupper( short_option );
+			else // if( std::isupper( short_option ) )
+				short_option = std::tolower( short_option );
+			if( find_abbreviation( short_option ) != m_options.end() )
+				err() << suggest( std::string{ '-', short_option } );
 		}
-		void check_spelling( char const* multi_char_option ) {
-			assert( multi_char_option[ 0 ] == '-' && multi_char_option[ 1 ] == '-' && multi_char_option[ 2 ] != '\0' );
+		void check_spelling( char const* long_option ) {
+			assert( long_option[ 0 ] == '-' && long_option[ 1 ] == '-' && long_option[ 2 ] != '\0' );
 			enum : std::size_t {
 				distance_cutoff = 4
 			};
-			char const* name_begin = multi_char_option + 2;
+			char const* name_begin = long_option + 2;
 			char const* name_end = name_begin;
 			for( ; valid_designator_character( *name_end ); ++name_end );
 			const std::size_t length = name_end - name_begin;
@@ -1721,9 +1721,9 @@ namespace po {
 		bool extract_argument( options_t::iterator option, int argc, char** argv, int& i, int j ) {
 			std::string expression = argv[ i ];
 			char const* argument = "";
-			// --var...
+			// -v...
 			if( argv[ i ][ j ] == '\0' ) {
-				// --var data
+				// -v data
 				if( option->second.get_type() != void_ &&
 					i + 1 < argc &&
 					( argv[ i + 1 ][ 0 ] != '-' || dashed_non_option( argv[ i + 1 ] ) )
@@ -1734,13 +1734,25 @@ namespace po {
 					argument = argv[ i ];
 				}
 			} else if( argv[ i ][ j ] == '=' ) {
-				// --var=data
+				// -v=data
 				argument = &argv[ i ][ j + 1 ];
-			} else {
-				// --vardata
+			} else if( j == 2 ) { // only for short options
+				// -vdata
 				argument = &argv[ i ][ j ];
+			} else {
+				err() << error() << "unexpected character \'" << argv[ i ][ j ] << "\'" << ignoring( argv[ i ] ) << suggest( std::string{ &argv[ i ][ 0 ], &argv[ i ][ j ] } + "=" + std::string{ &argv[ i ][ j ] } ) << '\n';
+				return false;
 			}
 			return parse_argument( option, std::move( expression ), argument );
+		}
+		bool good_unnamed_argument( options_t::iterator option, bool& good, char const* arg ) {
+			const bool result = option != m_options.end();
+			if( !result ) {
+				good = false;
+				error_nonoption_arguments( arg );
+				err() << '\n';
+			}
+			return result;
 		}
 
 	public:
@@ -1779,37 +1791,22 @@ namespace po {
 			else
 				++m_program_name; // skip the slash
 			const auto unnamed = m_options.find( "" );
-			const bool has_unnamed = unnamed != m_options.end();
 			for( int i = 1; i < argc; ++i ) {
 				if( argv[ i ][ 0 ] == '\0' )
 					continue;
-				if( argv[ i ][ 0 ] != '-' || ( has_unnamed && dashed_non_option( argv[ i ] ) ) ) {
-					if( !has_unnamed ) {
-						good = false;
-						error_nonoption_arguments( argv[ i ] );
-						err() << '\n';
-					} else {
+				if( argv[ i ][ 0 ] != '-' || ( unnamed != m_options.end() && dashed_non_option( argv[ i ] ) ) ) {
+					if( good_unnamed_argument( unnamed, good, argv[ i ] ) )
 						good &= parse_argument( unnamed, argv[ i ], argv[ i ] );
-					}
 				} else {
 					// -...
 					if( argv[ i ][ 1 ] == '\0' ) {
 						// -
-						if( !has_unnamed ) {
-							good = false;
-							error_nonoption_arguments( argv[ i ] );
-							err() << '\n';
-						} else {
+						if( good_unnamed_argument( unnamed, good, argv[ i ] ) )
 							good &= parse_argument( unnamed, argv[ i ], argv[ i ] );
-						}
 					} else if( argv[ i ][ 1 ] == '-' ) {
 						if( argv[ i ][ 2 ] == '\0' ) {
 							// --
-							if( !has_unnamed ) {
-								good = false;
-								error_nonoption_arguments( argv[ i ] );
-								err() << '\n';
-							} else {
+							if( good_unnamed_argument( unnamed, good, argv[ i ] ) ) {
 								while( ++i < argc ) {
 									good &= parse_argument( unnamed, argv[ i ], argv[ i ] );
 								}
@@ -1881,7 +1878,7 @@ namespace po {
 
 	private:
 		static bool valid_designator_character( char c ) {
-			return std::isalpha( c ) || c == '-' || c == '_';
+			return std::isalnum( c ) || c == '-' || c == '_';
 		}
 		static bool valid_designator( std::string const& designator ) {
 			if( designator.empty() )

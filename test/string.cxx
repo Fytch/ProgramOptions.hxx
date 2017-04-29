@@ -29,13 +29,14 @@ TEST_CASE( "string", "[ProgramOptions]" ) {
 	REQUIRE( f.get( 1 ).string == "no-exceptions" );
 	REQUIRE( unnamed.count() == 0 );
 
-	SECTION( "Scenario 1" ) {
+	SECTION( "good scenario 1" ) {
 		const arg_provider A {
 			"/Test",
 			"-a text",
 			"-a/path/to/nowhere",
 			"--bot=net",
-			"--bot text",
+			"--bot",
+			" text",
 			"-beast",
 			"--bot",
 			"whatever",
@@ -48,7 +49,7 @@ TEST_CASE( "string", "[ProgramOptions]" ) {
 			"-fmax-errors=25",
 			"-fno-rtti"
 		};
-		REQUIRE( parser( A.argc, A.argv ) );
+		CHECK( parser( A.argc, A.argv ) );
 		REQUIRE( a.count() == 1 );
 		CHECK( a.get().string == "/path/to/nowhere" );
 		REQUIRE( b.count() == 4 );
@@ -67,7 +68,7 @@ TEST_CASE( "string", "[ProgramOptions]" ) {
 		REQUIRE( unnamed.count() == 1 );
 		CHECK( unnamed.get().string == "unnamed arg" );
 	}
-	SECTION( "Scenario 2" ) {
+	SECTION( "good scenario 2" ) {
 		const arg_provider A {
 			"/Test",
 			"-a",
@@ -78,9 +79,9 @@ TEST_CASE( "string", "[ProgramOptions]" ) {
 			"--",
 			"-flto",
 			"--",
-			"-fmax-errors=25",
+			"-fmax-errors=25"
 		};
-		REQUIRE( parser( A.argc, A.argv ) );
+		CHECK( parser( A.argc, A.argv ) );
 		REQUIRE( a.count() == 1 );
 		CHECK( a.get().string == "foo" );
 		REQUIRE( b.count() == 0 );
@@ -94,5 +95,23 @@ TEST_CASE( "string", "[ProgramOptions]" ) {
 		CHECK( unnamed.get( 2 ).string == "-flto" );
 		CHECK( unnamed.get( 3 ).string == "--" );
 		CHECK( unnamed.get( 4 ).string == "-fmax-errors=25" );
+	}
+	SECTION( "invalid long option syntax" ) {
+		const arg_provider A {
+			"/Test",
+			"--bot123",
+			"--bot/usr/bin",
+			"--bot=/usr/lib"
+		};
+		CHECK( !parser( A.argc, A.argv ) );
+		REQUIRE( a.count() == 0 );
+		REQUIRE( b.count() == 1 );
+		CHECK( b.get( 0 ).string == "/usr/lib" );
+		REQUIRE( c.count() == 1 );
+		CHECK( c.get().string == "test" );
+		REQUIRE( f.count() == 2 );
+		CHECK( f.get( 0 ).string == "3" );
+		CHECK( f.get( 1 ).string == "no-exceptions" );
+		REQUIRE( unnamed.count() == 0 );
 	}
 }

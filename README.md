@@ -41,42 +41,23 @@ Using this sample is only recommended if you are already somewhat familiar with 
 - Fully compliant with the [GNU Program Argument Syntax Conventions](https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html)
 - Automatic help screen generation
 - Automatic error handling
-- Suggestions for wrongly spelled options
+- Spelling suggestions
 - Colored console output (can be turned off with [`#define PROGRAMOPTIONS_NO_COLORS`](#define-programoptions_no_colors))
 
 ### Syntax
-*ProgramOptions.hxx* adheres to this syntax:
+*ProgramOptions.hxx* adheres to the following rules:
 
-```
-executable [arguments...] [options]
-```
+- **Short options** (`-g`) consist of a single hyphen and an identifying character. The character must be graphic ([`isgraph`](http://en.cppreference.com/w/cpp/string/byte/isgraph)).
+  - To pass an **argument** to the option, these syntaxes are allowed: `-O3`, `-O=3`, `-O 3`
+  - Multiple short options may be grouped; `-alt` is equal to `-a -l -t`. This is only allowed if all options (including the last) don't require an argument.
+- **Long options** (`--version`) consist of two leading hyphens followed by an identifier. The identifier may consist of alphanumeric ([`isalnum`](http://en.cppreference.com/w/cpp/string/byte/isalnum)) characters, hyphens, and underscores but must not start with a hyphen.<sup>1</sup>
+  - To pass an **argument** to the option, these syntaxes are allowed: `--optimization=3`, `--optimization 3`
+- **Non-option arguments** (`file.txt`), also referred to as *operands* in POSIX lingo or *positional arguments*, are everything except options.
+- **Short options**, **long options** and **non-option arguments** can be interleaved at will. Their relative position is retained, i.e. *ProgramOptions.hxx* does not reorder them.
+- A single hyphen `-` is parsed as a **non-option argument**.
+- Two hyphens `--` terminate the option input. Any following arguments are treated as **non-option arguments**, even if they begin with a hyphen.
 
-Both non-option arguments and options may be intermingled at will. All options and arguments are case-sensitive.
-
-### Non-option arguments
-Non-option arguments, also referred to as operands in POSIX, don't belong to any option but to the program itself. They shall never start with a hyphen as then they'd be interpreted as options instead. In order for them to contain whitespaces, they shall be wrapped in '' or "", depending on the shell.
-
-In *ProgramOptions.hxx*, we say that they are arguments of the unnamed parameter.
-
-### Options
-Unlike non-option arguments, options must start with a hyphen, followed by either a single character or another hyphen and a name.
-
-**Single-character** options only consist of a single hyphen and an identifying character. The character must be graphic ([`isgraph`](http://en.cppreference.com/w/cpp/string/byte/isgraph)).
-
-**Multi-character** options, also referred to as long options in GNU lingo, consist of two leading hyphens followed by a name. The name may consist of alphabetic characters, hyphens, and underscores but must not start with a hyphen.
-
-### Option arguments
-Both kinds of options may require arguments. The syntax for providing arguments to an option can be any of the following:
-
-|Single-character       |Multi-character        |
-|-----------------------|-----------------------|
-|`exec -O 3`            |`exec --optimization 3` <sup>1</sup>|
-|`exec -O=3`            |`exec --optimization=3`|
-|`exec -O3`             |`exec --optimization3` <sup>2</sup>|
-
-<sup>1</sup> Note that `-optimization` (with only a single hyphen) would be interpreted as the option `-o` with the argument `ptimization`.
-
-<sup>2</sup> Note that this syntax only works for arguments not starting with a letter, a hyphen or an underscore as these characters would be interpreted as part of the option's name.
+<sup>1</sup> Note that `-version` (with only a single hyphen) would be interpreted as the option `-v` with the argument `ersion`.
 
 ## Integration
 *ProgramOptions.hxx* is very easy to integrate. After downloading the header file, all that it takes is a simple:
@@ -322,7 +303,7 @@ successfully parsed NaN which equals nan
 ## Defaults
 This small table helps clarifying the defaults for the different kinds of options.
 
-|Name                 |`"multi-char"`       |`"x"`                |`""` *(unnamed parameter)*|
+|Name                 |`"long-option"`      |`"x"`                |`""` *(unnamed parameter)*|
 |---------------------|---------------------|---------------------|---------------------|
 |`.abbreviation`      |`'\0'` *(none)*      |`'x'`                |:x: *(disallowed)*   |
 |`.type`              |`po::void_`          |`po::void_`          |`po::string`         |

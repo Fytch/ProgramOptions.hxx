@@ -38,6 +38,24 @@ TEST_CASE( "errors", "[ProgramOptions]" ) {
 		CHECK( !sum.was_set() );
 		CHECK( !unnamed.was_set() );
 	}
+	SECTION( "parsing '--sum42'" ) {
+		const arg_provider A {
+			"/Test",
+			"--sum42"
+		};
+		CHECK( !parser( A.argc, A.argv ) );
+		CHECK( !sum.was_set() );
+		CHECK( !unnamed.was_set() );
+	}
+	SECTION( "parsing '--sumgarbage'" ) {
+		const arg_provider A {
+			"/Test",
+			"--sumgarbage"
+		};
+		CHECK( !parser( A.argc, A.argv ) );
+		CHECK( !sum.was_set() );
+		CHECK( !unnamed.was_set() );
+	}
 	SECTION( "parsing '--sum=garbage'" ) {
 		const arg_provider A {
 			"/Test",
