@@ -1366,7 +1366,7 @@ namespace po {
 			return begin();
 		}
 		reverse_iterator rbegin() const {
-			return reverse_iterator{ begin() };
+			return reverse_iterator{ end() };
 		}
 		const_reverse_iterator crbegin() const {
 			return rbegin();
@@ -1382,7 +1382,7 @@ namespace po {
 			return end();
 		}
 		reverse_iterator rend() const {
-			return reverse_iterator{ end() };
+			return reverse_iterator{ begin() };
 		}
 		const_reverse_iterator crend() const {
 			return rend();
@@ -1399,7 +1399,7 @@ namespace po {
 		}
 		template< value_type type >
 		std::reverse_iterator< value_iterator< type, iterator > > rbegin() const {
-			return std::reverse_iterator< value_iterator< type, iterator > >{ begin< type >() };
+			return std::reverse_iterator< value_iterator< type, iterator > >{ end< type >() };
 		}
 		template< value_type type >
 		std::reverse_iterator< value_iterator< type, iterator > > crbegin() const {
@@ -1417,7 +1417,7 @@ namespace po {
 		}
 		template< value_type type >
 		std::reverse_iterator< value_iterator< type, iterator > > rend() const {
-			return std::reverse_iterator< value_iterator< type, iterator > >{ end< type >() };
+			return std::reverse_iterator< value_iterator< type, iterator > >{ begin< type >() };
 		}
 		template< value_type type >
 		std::reverse_iterator< value_iterator< type, iterator > > crend() const {
