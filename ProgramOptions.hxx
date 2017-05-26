@@ -245,8 +245,9 @@ namespace po {
 		static constexpr std::size_t size = sizeof...( i );
 	};
 	namespace detail {
-		template< typename T, T i, bool _0 = ( i == 0 ), bool _1 = ( i == 1 ), typename = typename std::enable_if< ( i >= 0 ) >::type >
+		template< typename T, T i, bool _0 = ( i == 0 ), bool _1 = ( i == 1 ) >
 		struct make_integer_sequence_impl {
+			static_assert( i >= 0, "make_integer_sequence requires a non-negative size" );
 			template< typename = typename make_integer_sequence_impl< T, i / 2 >::type, typename = typename make_integer_sequence_impl< T, i % 2 >::type >
 			struct helper {
 			};
@@ -510,9 +511,10 @@ namespace po {
 		return detail::expect_unpacker( first, last, args, make_index_sequence< N - 1 >{} );
 	}
 
-	template< typename T, typename forward_iterator_t, typename = typename std::enable_if< std::numeric_limits< T >::is_integer && !std::numeric_limits< T >::is_signed >::type >
+	template< typename T, typename forward_iterator_t >
 	parsing_report< T > str2uint( forward_iterator_t first, forward_iterator_t last ) {
-		static_assert( std::numeric_limits< T >::digits % 4 == 0, "platform doesn't meet requirements" );
+		static_assert( std::numeric_limits< T >::is_integer && !std::numeric_limits< T >::is_signed, "str2uint only supports unsigned integral types" );
+		static_assert( std::numeric_limits< T >::digits % 4 == 0, "type doesn't meet requirements" );
 
 		for( ; first != last && std::isspace( *first ); ++first );
 		expect( first, last, '+' );
@@ -594,8 +596,10 @@ namespace po {
 		return str2uint< T >( str, str + std::strlen( str ) );
 	}
 
-	template< typename T, typename forward_iterator_t, typename = typename std::enable_if< std::numeric_limits< T >::is_integer && std::numeric_limits< T >::is_signed >::type >
+	template< typename T, typename forward_iterator_t >
 	parsing_report< T > str2int( forward_iterator_t first, forward_iterator_t last ) {
+		static_assert( std::numeric_limits< T >::is_integer && std::numeric_limits< T >::is_signed, "str2uint only supports signed integral types" );
+
 		for( ; first != last && std::isspace( *first ); ++first );
 		const bool neg = expect( first, last, '-' );
 		if( !neg )
@@ -620,8 +624,9 @@ namespace po {
 		return str2int< T >( str, str + std::strlen( str ) );
 	}
 
-	template< typename T, typename forward_iterator_t, typename = typename std::enable_if< std::is_floating_point< T >::value >::type >
+	template< typename T, typename forward_iterator_t >
 	parsing_report< T > str2flt( forward_iterator_t first, forward_iterator_t last ) {
+		static_assert( std::is_floating_point< T >::value, "str2flt only supports built-in floating point types" );
 		static_assert( std::numeric_limits< T >::is_iec559, "platform doesn't meet requirements" );
 		static_assert( std::numeric_limits< T >::has_quiet_NaN, "type insufficient; doesn't support quiet NaNs" );
 		static_assert( std::numeric_limits< T >::has_infinity, "type insufficient; doesn't support infinities" );
@@ -680,12 +685,16 @@ namespace po {
 		return str2flt< T >( str, str + std::strlen( str ) );
 	}
 
-	template< typename T, typename = typename std::enable_if< std::numeric_limits< T >::is_integer >::type >
+	template< typename T >
 	std::string int2str( T const& value ) {
+		static_assert( std::numeric_limits< T >::is_specialized && std::numeric_limits< T >::is_integer, "int2str only supports integral types" );
+
 		return std::to_string( value );
 	}
-	template< typename T, typename = typename std::enable_if< !std::numeric_limits< T >::is_integer >::type >
+	template< typename T >
 	std::string flt2str( T const& value ) {
+		static_assert( std::numeric_limits< T >::is_specialized && !std::numeric_limits< T >::is_integer, "flt2str only supports floating point types" );
+
 		// TODO: provide a more efficient implementation
 		std::ostringstream ostrs;
 		ostrs << value;
