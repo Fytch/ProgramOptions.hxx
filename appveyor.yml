@@ -7,16 +7,16 @@ environment:
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       COMPILER: Visual Studio 14 2015
-      CMAKE_GEN: "Visual Studio 15 2015"
+      CMAKE_GEN: "Visual Studio 14 2015"
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       COMPILER: Visual Studio 14 2015
-      CMAKE_GEN: "Visual Studio 15 2015 Win64"
+      CMAKE_GEN: "Visual Studio 14 2015 Win64"
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-      COMPILER: Visual Studio 14 2017
-      CMAKE_GEN: "Visual Studio 14 2017"
+      COMPILER: Visual Studio 15 2017
+      CMAKE_GEN: "Visual Studio 15 2017"
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-      COMPILER: Visual Studio 14 2017
-      CMAKE_GEN: "Visual Studio 14 2017 Win64"
+      COMPILER: Visual Studio 15 2017
+      CMAKE_GEN: "Visual Studio 15 2017 Win64"
 
 matrix:
   fast_finish: true
