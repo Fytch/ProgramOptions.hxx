@@ -40,7 +40,11 @@ matrix:
             - llvm-toolchain-precise-3.6
           packages:
             - clang-3.6
-      env: COMPILER=clang++-3.6
+            - libc++-dev
+            - libc++abi-dev
+      env:
+        - COMPILER=clang++-3.6
+        - CMAKE_FLAGS="-DCMAKE_CXX_FLAGS=-stdlib=libc++ -DCMAKE_EXE_LINKER_FLAGS=-lc++"
     - compiler: clang
       addons:
         apt:
@@ -49,7 +53,11 @@ matrix:
             - llvm-toolchain-precise-3.7
           packages:
             - clang-3.7
-      env: COMPILER=clang++-3.7
+            - libc++-dev
+            - libc++abi-dev
+      env:
+        - COMPILER=clang++-3.7
+        - CMAKE_FLAGS="-DCMAKE_CXX_FLAGS=-stdlib=libc++ -DCMAKE_EXE_LINKER_FLAGS=-lc++"
     - compiler: clang
       addons:
         apt:
@@ -58,7 +66,11 @@ matrix:
             - llvm-toolchain-precise-3.8
           packages:
             - clang-3.8
-      env: COMPILER=clang++-3.8
+            - libc++-dev
+            - libc++abi-dev
+      env:
+        - COMPILER=clang++-3.8
+        - CMAKE_FLAGS="-DCMAKE_CXX_FLAGS=-stdlib=libc++ -DCMAKE_EXE_LINKER_FLAGS=-lc++"
     - compiler: clang
       addons:
         apt:
@@ -67,7 +79,11 @@ matrix:
             - llvm-toolchain-trusty-3.9
           packages:
             - clang-3.9
-      env: COMPILER=clang++-3.9
+            - libc++-dev
+            - libc++abi-dev
+      env:
+        - COMPILER=clang++-3.9
+        - CMAKE_FLAGS="-DCMAKE_CXX_FLAGS=-stdlib=libc++ -DCMAKE_EXE_LINKER_FLAGS=-lc++"
     - compiler: clang
       addons:
         apt:
@@ -76,7 +92,11 @@ matrix:
             - llvm-toolchain-trusty-4.0
           packages:
             - clang-4.0
-      env: COMPILER=clang++-4.0
+            - libc++-dev
+            - libc++abi-dev
+      env:
+        - COMPILER=clang++-4.0
+        - CMAKE_FLAGS="-DCMAKE_CXX_FLAGS=-stdlib=libc++ -DCMAKE_EXE_LINKER_FLAGS=-lc++"
 
 script:
   - uname -a
@@ -85,13 +105,13 @@ script:
 
   - mkdir bin_noexcept
   - cd bin_noexcept
-  - cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_CXX_COMPILER=$COMPILER -DPROGRAMOPTIONS_BUILD_TEST=OFF -DPROGRAMOPTIONS_NO_EXCEPTIONS=ON
+  - cmake .. $CMAKE_FLAGS -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_CXX_COMPILER=$COMPILER -DPROGRAMOPTIONS_BUILD_TEST=OFF -DPROGRAMOPTIONS_NO_EXCEPTIONS=ON
   - cmake --build .
   - cd ..
 
   - mkdir bin
   - cd bin
-  - cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_CXX_COMPILER=$COMPILER
+  - cmake .. $CMAKE_FLAGS -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_CXX_COMPILER=$COMPILER
   - cmake --build .
 
   - ./Test
