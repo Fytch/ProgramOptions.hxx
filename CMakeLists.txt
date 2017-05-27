@@ -5,15 +5,30 @@ option( PROGRAMOPTIONS_NO_EXCEPTIONS "disable exceptions" OFF )
 option( PROGRAMOPTIONS_BUILD_TEST "build test" ON )
 option( PROGRAMOPTIONS_BUILD_EXAMPLES "build examples" ON )
 
-set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wno-deprecated -std=c++11 -fno-rtti" )
-set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -ggdb -fno-omit-frame-pointer" )
-set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -march=native -DNDEBUG -s -flto" )
+if( CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR
+	CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR
+	CMAKE_CXX_COMPILER_ID MATCHES "Intel" )
+	set( PROGRAMOPTIONS_GNU_OPTIONS TRUE )
+elseif( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
+	set( PROGRAMOPTIONS_MS_OPTIONS TRUE )
+endif()
 
 include_directories( "./" )
 include_directories( "./ext/" )
 
+if( PROGRAMOPTIONS_GNU_OPTIONS )
+	set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wno-deprecated -std=c++14 -fno-rtti" )
+	set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -ggdb -fno-omit-frame-pointer" )
+	set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -march=native -DNDEBUG -s -flto" )
+endif()
+
 if( PROGRAMOPTIONS_NO_EXCEPTIONS )
-	set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions -DPROGRAMOPTIONS_NO_EXCEPTIONS" )
+	set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DPROGRAMOPTIONS_NO_EXCEPTIONS" )
+	if( PROGRAMOPTIONS_GNU_OPTIONS )
+		set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions" )
+	elseif( PROGRAMOPTIONS_MS_OPTIONS )
+		set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc" )
+	endif()
 endif()
 
 if( PROGRAMOPTIONS_BUILD_TEST )
