@@ -246,17 +246,16 @@ namespace po {
 	};
 	namespace detail {
 		template< typename T, T i, bool _0 = ( i == 0 ), bool _1 = ( i == 1 ) >
-		struct make_integer_sequence_impl {
-			static_assert( i >= 0, "make_integer_sequence requires a non-negative size" );
-			template< typename = typename make_integer_sequence_impl< T, i / 2 >::type, typename = typename make_integer_sequence_impl< T, i % 2 >::type >
-			struct helper {
-			};
-			template< T... j, T... k >
-			struct helper< integer_sequence< T, j... >, integer_sequence< T, k... > > {
-				using type = integer_sequence< T, j..., ( j + i / 2 )..., ( k + i - 1 )... >;
-			};
-			using type = typename helper<>::type;
+		struct make_integer_sequence_impl;
+
+		template< typename T, T i, typename = typename make_integer_sequence_impl< T, i / 2 >::type, typename = typename make_integer_sequence_impl< T, i % 2 >::type >
+		struct integer_sequence_assembler {
 		};
+		template< typename T, T i, T... j, T... k >
+		struct integer_sequence_assembler< T, i, integer_sequence< T, j... >, integer_sequence< T, k... > > {
+			using type = integer_sequence< T, j..., ( j + i / 2 )..., ( k + i - 1 )... >;
+		};
+
 		template< typename T, T i >
 		struct make_integer_sequence_impl< T, i, true, false > {
 			using type = integer_sequence< T >;
@@ -264,6 +263,11 @@ namespace po {
 		template< typename T, T i >
 		struct make_integer_sequence_impl< T, i, false, true > {
 			using type = integer_sequence< T, 0 >;
+		};
+		template< typename T, T i >
+		struct make_integer_sequence_impl< T, i, false, false > {
+			static_assert( i >= 0, "make_integer_sequence requires a non-negative size" );
+			using type = typename integer_sequence_assembler< T, i >::type;
 		};
 	}
 	template< typename T, T N >
