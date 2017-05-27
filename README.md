@@ -1,6 +1,7 @@
 # ProgramOptions.hxx
 
 [![Build Status](https://travis-ci.org/Fytch/ProgramOptions.hxx.svg?branch=master)](https://travis-ci.org/Fytch/ProgramOptions.hxx)
+[![Build status](https://ci.appveyor.com/api/projects/status/0tidhvat904wagc3?svg=true)](https://ci.appveyor.com/project/Fytch/programoptions-hxx)
 
 ## Contents
 - [Getting started](#getting-started)

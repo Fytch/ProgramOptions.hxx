@@ -1,0 +1,31 @@
+version: '{build}'
+
+shallow_clone: true
+
+environment:
+  MSBUILD_FLAGS: /verbosity:minimal /maxcpucount
+  matrix:
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      CMAKE_GEN: "Visual Studio 15 2017"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      CMAKE_GEN: "Visual Studio 15 2017 Win64"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      CMAKE_GEN: "Visual Studio 14 2015"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      CMAKE_GEN: "Visual Studio 14 2015 Win64"
+
+matrix:
+  fast_finish: true
+
+init: []
+
+install: []
+
+before_build:
+  - mkdir bin
+  - cd bin
+  - cmake .. -G "%CMAKE_GEN%" -DPROGRAMOPTIONS_BUILD_TEST=OFF
+
+build_script:
+  - cmake --build . --config Debug -- %%MSBUILD_FLAGS%
+  - cmake --build . --config Release -- %%MSBUILD_FLAGS%
