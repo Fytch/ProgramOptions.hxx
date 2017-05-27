@@ -36,4 +36,4 @@ before_build:
   - cmake .. -G "%CMAKE_GEN%" -DPROGRAMOPTIONS_BUILD_TEST=OFF
 
 build_script:
-  - cmake --build . --config "%CONFIGURATION%" -- %%MSBUILD_FLAGS%
+  - cmake --build . --config "%CONFIGURATION%" -- %MSBUILD_FLAGS%
