@@ -39,4 +39,4 @@ build_script:
   - cmake --build . --config "%CONFIGURATION%" -- %MSBUILD_FLAGS%
 
 after_build:
-  - ./%CONFIGURATION%/Test
+  - "%CONFIGURATION%/Test"
