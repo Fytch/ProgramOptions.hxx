@@ -69,7 +69,7 @@ Using this sample is only recommended if you are already somewhat familiar with 
 Don't forget to compile with C++11 enabled, i.e. with `-std=c++11`.
 
 ## Usage
-Using *ProgramOptions.hxx* is straightforward; we'll explain it by means of examples. All examples shown here and more can be found in the `examples` directory, all of which are well-documented.
+Using *ProgramOptions.hxx* is straightforward; we'll explain it by means of practical examples. All examples shown here and more can be found in the [/examples](examples) directory, all of which are well-documented.
 
 ### Example 1 (`abbreviation`, `u32`, `available`, `get`)
 The following snippet is the complete source code for a simple program expecting an integer optimization level.
@@ -94,13 +94,13 @@ int main( int argc, char** argv ) {
 ```
 And in action:
 ```
-$ ./optimization.exe
+$ ./optimization
 no optimization level set!
-$ ./optimization.exe -O2
+$ ./optimization -O2
 optimization level set to 2
-$ ./optimization.exe -O=0xFF
+$ ./optimization -O=0xFF
 optimization level set to 255
-$ ./optimization.exe -O3 --optimization 1e2
+$ ./optimization -O3 --optimization 1e2
 optimization level set to 100
 ```
 ### Example 2 (`fallback`, `was_set`, `string`, `multi`)
@@ -143,7 +143,7 @@ int main( int argc, char** argv ) {
 ```
 In action:
 ```
-$ ./include.exe -I/usr/include/foo -I "/usr/include/bar" -O3
+$ ./include -I/usr/include/foo -I "/usr/include/bar" -O3
 optimization level (manual) = 3
 include paths (2):
         /usr/include/foo
@@ -210,7 +210,7 @@ int main( int argc, char** argv ) {
 ```
 How the help screen appears:
 ```
-$ ./files.exe --help
+$ ./files --help
 Usage:
   files.exe [arguments...] [options]
 Available options:
@@ -220,7 +220,7 @@ Available options:
 ```
 In action:
 ```
-$ ./files.exe -I ./include foo.cxx bar.cxx -O3 -- --qux.cxx
+$ ./files -I ./include foo.cxx bar.cxx -O3 -- --qux.cxx
 processed 'foo.cxx' successfully!
 processed 'bar.cxx' successfully!
 processed '--qux.cxx' successfully!
@@ -281,23 +281,23 @@ int main( int argc, char** argv ) {
 ```
 In action:
 ```
-$ ./sum.exe
+$ ./sum
 ( + -8 50 ) = 42
-$ ./sum.exe 39.5 2.5
+$ ./sum 39.5 2.5
 successfully parsed 39.5 which equals 39.5
 successfully parsed 2.5 which equals 2.5
 ( + 39.5 2.5 ) = 42
-$ ./sum.exe 1e3 -1e0 -1e1 -2e2
+$ ./sum 1e3 -1e0 -1e1 -2e2
 successfully parsed 1e3 which equals 1000
 successfully parsed -1e0 which equals -1
 successfully parsed -1e1 which equals -10
 successfully parsed -2e2 which equals -200
 ( + 1000 -1 -10 -200 ) = 789
-$ ./sum.exe inf -1
+$ ./sum inf -1
 successfully parsed inf which equals inf
 successfully parsed -1 which equals -1
 ( + inf -1 ) = inf
-$ ./sum.exe 12 NaN
+$ ./sum 12 NaN
 successfully parsed 12 which equals 12
 successfully parsed NaN which equals nan
 ( + 12 nan ) = nan
