@@ -2,6 +2,7 @@ cmake_minimum_required( VERSION 2.8.8 )
 project( ProgramOptions )
 
 option( PROGRAMOPTIONS_NO_EXCEPTIONS "disable exceptions" OFF )
+option( PROGRAMOPTIONS_NO_COLORS "disable colored output" OFF )
 option( PROGRAMOPTIONS_BUILD_TEST "build test" ON )
 option( PROGRAMOPTIONS_BUILD_EXAMPLES "build examples" ON )
 
@@ -23,12 +24,16 @@ if( PROGRAMOPTIONS_GNU_OPTIONS )
 endif()
 
 if( PROGRAMOPTIONS_NO_EXCEPTIONS )
-	set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DPROGRAMOPTIONS_NO_EXCEPTIONS" )
+	add_definitions( -DPROGRAMOPTIONS_NO_EXCEPTIONS )
 	if( PROGRAMOPTIONS_GNU_OPTIONS )
 		set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions" )
 	elseif( PROGRAMOPTIONS_MS_OPTIONS )
 		set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc" )
 	endif()
+endif()
+
+if( PROGRAMOPTIONS_NO_COLORS )
+	add_definitions( -DPROGRAMOPTIONS_NO_COLORS )
 endif()
 
 if( PROGRAMOPTIONS_BUILD_TEST )
