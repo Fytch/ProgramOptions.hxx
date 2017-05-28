@@ -33,7 +33,10 @@ before_build:
   - mkdir bin
   - cd bin
   - cmake --version
-  - cmake .. -G "%CMAKE_GEN%" -DPROGRAMOPTIONS_BUILD_TEST=OFF
+  - cmake .. -G "%CMAKE_GEN%"
 
 build_script:
   - cmake --build . --config "%CONFIGURATION%" -- %MSBUILD_FLAGS%
+
+after_build:
+  - ./%CONFIGURATION%/Test
