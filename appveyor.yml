@@ -33,7 +33,7 @@ before_build:
   - mkdir bin
   - cd bin
   - cmake --version
-  - cmake .. -G "%CMAKE_GEN%"
+  - cmake .. -G "%CMAKE_GEN%" -DPROGRAMOPTIONS_NO_COLORS=ON
 
 build_script:
   - cmake --build . --config "%CONFIGURATION%" -- %MSBUILD_FLAGS%
