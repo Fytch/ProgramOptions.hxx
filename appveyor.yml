@@ -21,9 +21,7 @@ environment:
 matrix:
   fast_finish: true
 
-configuration:
-  - Debug
-  - Release
+configuration: Debug
 
 init: []
 
