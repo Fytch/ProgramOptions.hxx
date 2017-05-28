@@ -10,7 +10,7 @@ class arg_provider {
 	std::vector< char* > m_args;
 
 public:
-	const int argc = m_args.size();
+	const int argc = static_cast< int >( m_args.size() );
 	char** const argv = m_args.data();
 
 	template< std::size_t... indices, typename... args_t >
