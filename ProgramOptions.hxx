@@ -1927,7 +1927,6 @@ namespace po {
 			return operator_brackets_helper( std::move( designator ) );
 		}
 
-		// TODO: inform about options' arguments e.g. -O[u32] or --include-path[=string]
 		friend std::ostream& operator<<( std::ostream& stream, parser const& object ) {
 			enum : std::size_t {
 				console_width = 80 - 1, // -1 because writing until the real end returns the carriage
