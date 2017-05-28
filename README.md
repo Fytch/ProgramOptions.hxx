@@ -1,7 +1,8 @@
 # ProgramOptions.hxx
 
 [![Build Status](https://travis-ci.org/Fytch/ProgramOptions.hxx.svg?branch=master)](https://travis-ci.org/Fytch/ProgramOptions.hxx)
-[![Build status](https://ci.appveyor.com/api/projects/status/0tidhvat904wagc3?svg=true)](https://ci.appveyor.com/project/Fytch/programoptions-hxx)
+[![Build Status](https://ci.appveyor.com/api/projects/status/0tidhvat904wagc3?svg=true)](https://ci.appveyor.com/project/Fytch/programoptions-hxx)
+[![GitHub License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.txt)
 
 ## Contents
 - [Getting started](#getting-started)
