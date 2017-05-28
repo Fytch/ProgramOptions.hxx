@@ -15,7 +15,7 @@ public:
 
 	template< std::size_t... indices, typename... args_t >
 	explicit arg_provider( po::integer_sequence< std::size_t, indices... >, args_t&&... args )
-		: m_data{ std::vector< char >{ std::begin( args ), std::end( args ) }... }
+		: m_data{ std::vector< char >( std::begin( args ), std::end( args ) )... }
 		, m_args{ m_data[ indices ].data()... } {
 	}
 	template< typename... args_t >
