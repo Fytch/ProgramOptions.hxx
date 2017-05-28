@@ -111,7 +111,7 @@ namespace po {
 			m_console = GetStdHandle( STD_OUTPUT_HANDLE );
 			assert( m_console != INVALID_HANDLE_VALUE );
 			CONSOLE_SCREEN_BUFFER_INFO info;
-			const bool result = GetConsoleScreenBufferInfo( m_console, &info );
+			const BOOL result = GetConsoleScreenBufferInfo( m_console, &info );
 			assert( result );
 			( void )result;
 			m_old_attributes = info.wAttributes;
@@ -455,12 +455,10 @@ namespace po {
 		return c == '0' || c == '1';
 	}
 	inline bool is_digit( char c ) {
-		// return std::isdigit( c );
 		return '0' <= c && c <= '9';
 	}
 	inline bool is_hex_digit( char c ) {
-		// return ( '0' <= c && c <= '9' ) || ( 'a' <= c && c <= 'f' ) || ( 'A' <= c && c <= 'F' );
-		return std::isxdigit( c );
+		return ( '0' <= c && c <= '9' ) || ( 'a' <= c && c <= 'f' ) || ( 'A' <= c && c <= 'F' );
 	}
 
 	inline int get_bin_digit( char c ) {
@@ -1731,7 +1729,7 @@ namespace po {
 				&& ( is_digit( arg[ 1 ] ) || arg[ 1 ] == '.' )
 				&& find_abbreviation( arg[ 1 ] ) == m_options.end();
 		}
-		bool extract_argument( options_t::iterator option, int argc, char** argv, int& i, int j ) {
+		bool extract_argument( options_t::iterator option, std::size_t argc, char** argv, std::size_t& i, std::size_t j ) {
 			std::string expression = argv[ i ];
 			char const* argument = "";
 			// -v...
@@ -1788,9 +1786,11 @@ namespace po {
 			return true;
 		}
 
-		bool operator()( int argc, char** argv ) {
+		bool operator()( int int_argc, char** argv ) {
 			PROGRAMOPTIONS_ASSERT( wellformed(), "cannot parse with an ill-formed parser" );
 			PROGRAMOPTIONS_ASSERT( std::none_of( m_options.begin(), m_options.end(), []( options_t::value_type const& x ){ return x.second.was_set(); } ), "some options were already set" );
+			assert( int_argc >= 0 );
+			const auto argc = static_cast< std::size_t >( int_argc );
 			if( argc == 0 )
 				return true;
 			bool good = true;
@@ -1804,7 +1804,7 @@ namespace po {
 			else
 				++m_program_name; // skip the slash
 			const auto unnamed = m_options.find( "" );
-			for( int i = 1; i < argc; ++i ) {
+			for( std::size_t i = 1; i < argc; ++i ) {
 				if( argv[ i ][ 0 ] == '\0' )
 					continue;
 				if( argv[ i ][ 0 ] != '-' || ( unnamed != m_options.end() && dashed_non_option( argv[ i ] ) ) ) {
@@ -1977,7 +1977,7 @@ namespace po {
 					stream << repeat{ separator_width, ' ' };
 				if( verbose ) {
 					stream << white << '-' << '-' << i.first;
-					const int rem = verbose_width - 2 - i.first.size();
+					const int rem = static_cast< int >( verbose_width ) - 2 - static_cast< int >( i.first.size() );
 					if( rem >= 0 )
 						stream << repeat{ static_cast< std::size_t >( rem ) + mid_padding, ' ' };
 					else
