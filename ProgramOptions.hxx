@@ -1888,6 +1888,9 @@ namespace po {
 				i.second.make_immutable();
 			return good;
 		}
+		bool parse( int argc, char** argv ) {
+			return operator()( argc, argv );
+		}
 
 	private:
 		static bool valid_designator_character( char c ) {
