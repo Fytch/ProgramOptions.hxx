@@ -1987,10 +1987,10 @@ namespace po {
 				} else {
 					stream << repeat{ verbose_width + mid_padding, ' ' };
 				}
-				std::size_t caret = description_start;
+				std::size_t carriage = description_start;
 				std::string const& descr = i.second.get_description();
 				for( std::size_t i = 0; i < descr.size(); ++i ) {
-					const bool last = ( i + 1 < descr.size() ) && ( caret + 1 >= console_width );
+					const bool last = ( i + 1 < descr.size() ) && ( carriage + 1 >= console_width );
 					if( last ) {
 						if( std::isgraph( descr[ i ] ) && std::isgraph( descr[ i + 1 ] ) ) {
 							if( std::isgraph( descr[ i - 1 ] ) ) {
@@ -2002,13 +2002,13 @@ namespace po {
 						}
 					}
 					if( descr[ i ] == '\n' || last ) {
-						caret = description_start + paragraph_indenture;
-						stream << '\n' << repeat{ caret, ' ' };
+						carriage = description_start + paragraph_indenture;
+						stream << '\n' << repeat{ carriage, ' ' };
 						if( std::isblank( descr[ i + 1 ] ) )
 							++i;
 					} else {
 						stream << descr[ i ];
-						++caret;
+						++carriage;
 					}
 				}
 				stream << '\n';
