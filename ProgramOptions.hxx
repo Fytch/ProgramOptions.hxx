@@ -1960,6 +1960,49 @@ namespace po {
 		}
 
 	public:
+		using iterator = options_t::iterator;
+		using const_iterator = options_t::const_iterator;
+		using reverse_iterator = std::reverse_iterator< iterator >;
+		using const_reverse_iterator = std::reverse_iterator< const_iterator >;
+
+		iterator begin() {
+			return m_options.begin();
+		}
+		const_iterator begin() const {
+			return m_options.begin();
+		}
+		const_iterator cbegin() const {
+			return begin();
+		}
+		reverse_iterator rbegin() {
+			return reverse_iterator{ end() };
+		}
+		const_reverse_iterator rbegin() const {
+			return const_reverse_iterator{ end() };
+		}
+		const_reverse_iterator crbegin() const {
+			return rbegin();
+		}
+
+		iterator end() {
+			return m_options.end();
+		}
+		const_iterator end() const {
+			return m_options.end();
+		}
+		const_iterator cend() const {
+			return end();
+		}
+		reverse_iterator rend() {
+			return reverse_iterator{ begin() };
+		}
+		const_reverse_iterator rend() const {
+			return const_reverse_iterator{ begin() };
+		}
+		const_reverse_iterator crend() const {
+			return rend();
+		}
+
 		option& operator[]( std::string const& designator ) {
 			return operator_brackets_helper( std::string{ designator } );
 		}
