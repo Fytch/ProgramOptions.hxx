@@ -1122,6 +1122,7 @@ namespace po {
 		std::string m_description;
 		value_type m_type = void_;
 		bool m_multi = false;
+		bool m_mandatory = false;
 
 		std::unique_ptr< value_vector_base > m_fallback;
 		std::unique_ptr< value_vector_base > m_data;
@@ -1499,6 +1500,18 @@ namespace po {
 		}
 		bool is_multi() const {
 			return m_multi;
+		}
+
+		option& mandatory( bool value = true ) {
+			m_mandatory = value;
+			return *this;
+		}
+		option& non_mandatory() {
+			m_mandatory = false;
+			return *this;
+		}
+		bool is_mandatory() const {
+			return m_mandatory;
 		}
 
 	private:
@@ -1924,6 +1937,20 @@ namespace po {
 					}
 				}
 			}
+			for( auto&& i : m_options )
+				if( i.second.is_mandatory() && !i.second.was_set() ) {
+					good = false;
+					if( is_verbose() ) {
+						auto&& name = i.first;
+						if( !name.empty() ) {
+							*m_output_destination << error() << "option \'";
+							*m_output_destination << blue << i.first;
+							*m_output_destination << "\' has not been set\n";
+						} else {
+							*m_output_destination << error() << "no argument provided\n";
+						}
+					}
+				}
 			for( auto&& i : m_options )
 				i.second.make_immutable();
 			return good;
