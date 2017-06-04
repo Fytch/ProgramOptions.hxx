@@ -1,10 +1,11 @@
 #include <catch.hpp>
-#define PROGRAMOPTIONS_SILENT
 #include <ProgramOptions.hxx>
 #include "arg_provider.hxx"
 
 TEST_CASE( "errors", "[ProgramOptions]" ) {
 	po::parser parser;
+	parser.silent();
+
 	auto&& sum = parser[ "sum" ]
 		.abbreviation( 's' )
 		.type( po::i64 )

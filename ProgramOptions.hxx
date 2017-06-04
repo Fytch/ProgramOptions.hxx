@@ -168,23 +168,6 @@ namespace po {
 	}
 #endif // !PROGRAMOPTIONS_NO_COLORS
 
-#ifdef PROGRAMOPTIONS_SILENT
-	inline std::ostream& err() {
-		struct dummy_buf_t : public std::streambuf {
-			int overflow( int c ) {
-				return c;
-			}
-		};
-		static dummy_buf_t dummy_buf;
-		static std::ostream dummy_str{ &dummy_buf };
-		return dummy_str;
-	}
-#else // PROGRAMOPTIONS_SILENT
-	inline std::ostream& err() {
-		return std::cerr;
-	}
-#endif // PROGRAMOPTIONS_SILENT
-
 	struct error_t {
 		friend std::ostream& operator<<( std::ostream& stream, error_t const& /* object */ ) { // -Wunused-parameter
 			return stream << red << "error: ";
@@ -222,15 +205,6 @@ namespace po {
 	template< typename arg_t >
 	ignore_t< arg_t > ignoring( arg_t const& arg ) {
 		return { arg };
-	}
-
-	template< typename arg_t >
-	void error_nonoption_arguments( arg_t const& arg ) {
-		err() << error() << "non-option arguments not allowed" << ignoring( arg );
-	}
-	template< typename arg_t >
-	void error_unrecognized_option( arg_t const& arg ) {
-		err() << error() << "unrecognized option" << ignoring( arg );
 	}
 
 	// Compatibility stuff for the lack of C++14 support
@@ -1654,6 +1628,52 @@ namespace po {
 		using options_t = std::unordered_map< std::string, option >;
 		options_t m_options;
 		char const* m_program_name = "";
+		std::ostream* m_output_destination;
+
+	public:
+		parser() {
+			verbose( std::cerr );
+		}
+
+		void silent() {
+			m_output_destination = nullptr;
+		}
+		bool is_silent() const {
+			return m_output_destination == nullptr;
+		}
+		void verbose( std::ostream& destination ) {
+			m_output_destination = &destination;
+		}
+		bool is_verbose() const {
+			return !is_silent();
+		}
+
+	private:
+		std::ostream& err() {
+			if( m_output_destination ) {
+				return *m_output_destination;
+			} else {
+				struct dummy_buf_t : public std::streambuf {
+					int overflow( int c ) {
+						return c;
+					}
+				};
+				static dummy_buf_t dummy_buf;
+				static std::ostream dummy_str{ &dummy_buf };
+				return dummy_str;
+			}
+		}
+
+		template< typename arg_t >
+		void error_nonoption_arguments( arg_t const& arg ) {
+			assert( is_verbose() );
+			*m_output_destination << error() << "non-option arguments not allowed" << ignoring( arg );
+		}
+		template< typename arg_t >
+		void error_unrecognized_option( arg_t const& arg ) {
+			assert( is_verbose() );
+			*m_output_destination << error() << "unrecognized option" << ignoring( arg );
+		}
 
 		options_t::iterator find_abbreviation( char value ) {
 			auto iter = m_options.begin();
@@ -1664,6 +1684,7 @@ namespace po {
 		}
 
 		void check_spelling( char short_option ) {
+			assert( is_verbose() );
 			if( !std::isalpha( short_option ) )
 				return;
 			if( std::islower( short_option ) )
@@ -1671,9 +1692,10 @@ namespace po {
 			else // if( std::isupper( short_option ) )
 				short_option = std::tolower( short_option );
 			if( find_abbreviation( short_option ) != m_options.end() )
-				err() << suggest( std::string{ '-', short_option } );
+				*m_output_destination << suggest( std::string{ '-', short_option } );
 		}
 		void check_spelling( char const* long_option ) {
+			assert( is_verbose() );
 			assert( long_option[ 0 ] == '-' && long_option[ 1 ] == '-' && long_option[ 2 ] != '\0' );
 			enum : std::size_t {
 				distance_cutoff = 4
@@ -1698,30 +1720,32 @@ namespace po {
 				}
 			}
 			if( min_distance < distance_cutoff )
-				err() << suggest( std::string( "--" ) + nearest_option->first );
+				*m_output_destination << suggest( std::string( "--" ) + nearest_option->first );
 		}
 		template< typename expression_t, typename... args_t >
 		bool parse_argument( options_t::iterator option, expression_t const& expression, args_t&&... args ) const {
 			const error_code code = option->second.parse( std::forward< args_t >( args )... );
 			if( code == error_code::none )
 				return true;
-			err() << error() << "option \'";
-			err() << blue << option->first;
-			err() << "\' ";
-			switch( code ) {
-				case error_code::argument_expected:
-				case error_code::conversion_error:
-					err() << "expects an argument of type " << vt2str( option->second.get_type() );
-					break;
-				case error_code::no_argument_expected:
-					err() << "doesn't expect any arguments";
-					break;
-				case error_code::out_of_range:
-					err() << "has an argument that caused an out of range error";
-				default: // -Wswitch
-					;
+			if( is_verbose() ) {
+				*m_output_destination << error() << "option \'";
+				*m_output_destination << blue << option->first;
+				*m_output_destination << "\' ";
+				switch( code ) {
+					case error_code::argument_expected:
+					case error_code::conversion_error:
+						*m_output_destination << "expects an argument of type " << vt2str( option->second.get_type() );
+						break;
+					case error_code::no_argument_expected:
+						*m_output_destination << "doesn't expect any arguments";
+						break;
+					case error_code::out_of_range:
+						*m_output_destination << "has an argument that caused an out of range error";
+					default: // -Wswitch
+						;
+				}
+				*m_output_destination << ignoring( expression ) << '\n';
 			}
-			err() << ignoring( expression ) << '\n';
 			return false;
 		}
 		bool dashed_non_option( char* arg ) {
@@ -1751,7 +1775,12 @@ namespace po {
 				// -vdata
 				argument = &argv[ i ][ j ];
 			} else {
-				err() << error() << "unexpected character \'" << argv[ i ][ j ] << "\'" << ignoring( argv[ i ] ) << suggest( std::string{ &argv[ i ][ 0 ], &argv[ i ][ j ] } + "=" + std::string{ &argv[ i ][ j ] } ) << '\n';
+				if( is_verbose() )
+					*m_output_destination
+						<< error()
+						<< "unexpected character \'" << argv[ i ][ j ] << "\'"
+						<< ignoring( argv[ i ] )
+						<< suggest( std::string{ &argv[ i ][ 0 ], &argv[ i ][ j ] } + "=" + std::string{ &argv[ i ][ j ] } ) << '\n';
 				return false;
 			}
 			return parse_argument( option, std::move( expression ), argument );
@@ -1761,7 +1790,8 @@ namespace po {
 			if( !result ) {
 				good = false;
 				error_nonoption_arguments( arg );
-				err() << '\n';
+				if( is_verbose() )
+					*m_output_destination << '\n';
 			}
 			return result;
 		}
@@ -1832,15 +1862,19 @@ namespace po {
 							for( ; valid_designator_character( *last ); ++last );
 							if( first == last ) {
 								good = false;
-								error_unrecognized_option( argv[ i ] );
-								err() << '\n';
+								if( is_verbose() ) {
+									error_unrecognized_option( argv[ i ] );
+									*m_output_destination << '\n';
+								}
 							} else {
 								const auto opt = m_options.find( std::string{ first, last } );
 								if( opt == m_options.end() ) {
 									good = false;
-									error_unrecognized_option( argv[ i ] );
-									check_spelling( argv[ i ] );
-									err() << '\n';
+									if( is_verbose() ) {
+										error_unrecognized_option( argv[ i ] );
+										check_spelling( argv[ i ] );
+										*m_output_destination << '\n';
+									}
 								} else {
 									good &= extract_argument( opt, argc, argv, i, last - argv[ i ] );
 								}
@@ -1851,29 +1885,35 @@ namespace po {
 						const auto head = find_abbreviation( argv[ i ][ 1 ] );
 						if( head == m_options.end() ) {
 							good = false;
-							error_unrecognized_option( argv[ i ] );
-							check_spelling( argv[ i ][ 1 ] );
-							err() << '\n';
+							if( is_verbose() ) {
+								error_unrecognized_option( argv[ i ] );
+								check_spelling( argv[ i ][ 1 ] );
+								*m_output_destination << '\n';
+							}
 						} else if( head->second.get_type() == void_ ) {
 							// -fgh
 							char c;
 							for( std::size_t j = 1; ( c = argv[ i ][ j ] ) != '\0'; ++j ) {
 								if( !std::isprint( c ) || c == '-' ) {
 									good = false;
-									err() << error() << "invalid character \'" << c << "\'" << ignoring( &argv[ i ][ j ] ) << '\n';
+									if( is_verbose() )
+										*m_output_destination << error() << "invalid character \'" << c << "\'" << ignoring( &argv[ i ][ j ] ) << '\n';
 									break;
 								}
 								const auto opt = find_abbreviation( c );
 								if( opt == m_options.end() ) {
 									good = false;
-									error_unrecognized_option( c );
-									check_spelling( c );
-									err() << '\n';
+									if( is_verbose() ) {
+										error_unrecognized_option( c );
+										check_spelling( c );
+										*m_output_destination << '\n';
+									}
 									continue;
 								}
 								if( opt->second.get_type() != void_ ) {
 									good = false;
-									err() << error() << "non-void options not allowed in option packs" << ignoring( c ) << '\n';
+									if( is_verbose() )
+										*m_output_destination << error() << "non-void options not allowed in option packs" << ignoring( c ) << '\n';
 									continue;
 								}
 								good &= parse_argument( opt, c );

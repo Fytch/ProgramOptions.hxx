@@ -1,10 +1,11 @@
 #include <catch.hpp>
-#define PROGRAMOPTIONS_SILENT
 #include <ProgramOptions.hxx>
 #include "arg_provider.hxx"
 
 TEST_CASE( "integer", "[ProgramOptions]" ) {
 	po::parser parser;
+	parser.silent();
+
 	auto&& a = parser[ "a" ]
 		.type( po::i64 );
 	auto&& b = parser[ "bot" ]

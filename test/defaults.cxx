@@ -1,9 +1,10 @@
 #include <catch.hpp>
-#define PROGRAMOPTIONS_SILENT
 #include <ProgramOptions.hxx>
 
 TEST_CASE( "defaults", "[ProgramOptions]" ) {
 	po::parser parser;
+	parser.silent();
+
 	auto&& _1 = parser[ "abacus" ];
 	auto&& _2 = parser[ "a" ];
 	auto&& _3 = parser[ "" ];

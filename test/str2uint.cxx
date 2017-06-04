@@ -1,5 +1,4 @@
 #include <catch.hpp>
-#define PROGRAMOPTIONS_SILENT
 #include <ProgramOptions.hxx>
 #include <string>
 #include <limits>

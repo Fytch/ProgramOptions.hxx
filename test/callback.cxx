@@ -1,10 +1,10 @@
 #include <catch.hpp>
-#define PROGRAMOPTIONS_SILENT
 #include <ProgramOptions.hxx>
 #include "arg_provider.hxx"
 
 TEST_CASE( "callback", "[ProgramOptions]" ) {
 	po::parser parser;
+	parser.silent();
 
 	po::i32_t a_value{};
 	po::string_t a_value_str{};

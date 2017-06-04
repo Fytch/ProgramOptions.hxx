@@ -1,5 +1,4 @@
 #include <catch.hpp>
-#define PROGRAMOPTIONS_SILENT
 #undef NDEBUG
 #undef PROGRAMOPTIONS_NO_EXCEPTIONS
 #include <ProgramOptions.hxx>
@@ -8,6 +7,8 @@
 
 TEST_CASE( "exceptions", "[ProgramOptions]" ) {
 	po::parser parser;
+	parser.silent();
+
 	auto&& a = parser[ "a" ]
 		.type( po::f32 );
 	auto&& bc = parser[ "bc" ]
