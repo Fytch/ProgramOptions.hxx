@@ -1939,6 +1939,8 @@ namespace po {
 			};
 			PROGRAMOPTIONS_ASSERT( object.wellformed(), "cannot print an ill-formed parser" );
 			stream << "Usage:\n  " << object.m_program_name;
+			if( !object.m_options.empty() )
+				stream << " [options]";
 			const auto unnamed = object.m_options.find( "" );
 			if( unnamed != object.m_options.end() ) {
 				stream << " [argument";
@@ -1946,8 +1948,6 @@ namespace po {
 					stream << "s...";
 				stream << ']';
 			}
-			if( !object.m_options.empty() )
-				stream << " [options]";
 			stream << "\nAvailable options:\n";
 			bool any_abbreviations = false;
 			std::size_t max_verbose = 0;
