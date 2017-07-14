@@ -1718,7 +1718,8 @@ namespace po {
 					break;
 				case error_code::out_of_range:
 					err() << "has an argument that caused an out of range error";
-				default: // -Wswitch
+					break;
+				case error_code::none:
 					;
 			}
 			err() << ignoring( expression ) << '\n';
