@@ -1,10 +1,11 @@
 #include <catch.hpp>
-#define PROGRAMOPTIONS_SILENT
 #include <ProgramOptions.hxx>
 #include "arg_provider.hxx"
 
 TEST_CASE( "option_packs", "[ProgramOptions]" ) {
 	po::parser parser;
+	parser.silent();
+
 	auto&& g = parser[ "g" ];
 	auto&& h = parser[ "home" ]
 		.abbreviation( 'h' )

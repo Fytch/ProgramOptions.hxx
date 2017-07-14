@@ -15,6 +15,7 @@
   - [Example 2 (`fallback`, `was_set`, `string`, `multi`)](#example-2-fallback-was_set-string-multi)
   - [Example 3 (`description`, `callback`, unnamed parameter)](#example-3-description-callback-unnamed-parameter)
   - [Example 4 (more `callback`s, more `fallback`s, `f64`, `to_vector`)](#example-4-more-callbacks-more-fallbacks-f64-to_vector)
+  - [Miscellaneous functions](#miscellaneous-functions)
 - [Defaults](#defaults)
 - [Flags](#flags)
 - [Third-party libraries](#third-party-libraries)
@@ -302,6 +303,11 @@ successfully parsed 12 which equals 12
 successfully parsed NaN which equals nan
 ( + 12 nan ) = nan
 ```
+### Miscellaneous functions
+
+#### `void po::parser::silent()`
+Suppresses all communication via `stderr`. Without this flag, *ProgramOptions.hxx* notifies the user in case of warnings or errors occurring while parsing. For instance, if an option requires an argument of type `i32` and it couldn't be parsed, overflowed or wasn't provided at all, *ProgramOptions.hxx* would print an error saying that the option's argument is invalid and that it hence was ignored.
+
 ## Defaults
 This small table helps clarifying the defaults for the different kinds of options.
 
@@ -313,9 +319,6 @@ This small table helps clarifying the defaults for the different kinds of option
 
 ## Flags
 All flags have to be `#define`d before including *ProgramOptions.hxx*. Different translation units may include *ProgramOptions.hxx* using different flags.
-
-### `#define PROGRAMOPTIONS_SILENT`
-Suppresses all communication via `stderr`. Without this flag, *ProgramOptions.hxx* notifies the user in case of warnings or errors occurring while parsing. For instance, if an option requires an argument of type `i32` and it couldn't be parsed or wasn't provided at all, *ProgramOptions.hxx* would print a warning that the option must have an argument and that it hence was ignored.
 
 ### `#define PROGRAMOPTIONS_NO_EXCEPTIONS`
 Disables all exceptions and thus allows compilation with `-fno-exceptions`. However, incorrect use of the library and unmet preconditions entail `abort()` via `assert(...)`. This flag is implied by `NDEBUG`.
