@@ -55,7 +55,7 @@ Using this sample is only recommended if you are already somewhat familiar with 
   - Multiple short options may be grouped; `-alt` is equal to `-a -l -t`. This is only allowed if all options (including the last) don't require an argument.
 - **Long options** (`--version`) consist of two leading hyphens followed by an identifier. The identifier may consist of alphanumeric ([`isalnum`](http://en.cppreference.com/w/cpp/string/byte/isalnum)) characters, hyphens, and underscores but must not start with a hyphen.<sup>1</sup>
   - To pass an **argument** to the option, these syntaxes are allowed: `--optimization=3`, `--optimization 3`
-- **Non-option arguments** (`file.txt`), also referred to as *operands* in POSIX lingo or *positional arguments*, are everything except options.
+- **Non-option arguments** (`file.txt`), also referred to as *operands* in POSIX lingo or *positional arguments*, are everything except options and options' arguments.
 - **Short options**, **long options** and **non-option arguments** can be interleaved at will. Their relative position is retained, i.e. *ProgramOptions.hxx* does not reorder them.
 - A single hyphen `-` is parsed as a **non-option argument**.
 - Two hyphens `--` terminate the option input. Any following arguments are treated as **non-option arguments**, even if they begin with a hyphen.
@@ -73,7 +73,7 @@ Don't forget to compile with C++11 enabled, i.e. with `-std=c++11`.
 Using *ProgramOptions.hxx* is straightforward; we'll explain it by means of practical examples. All examples shown here and more can be found in the [/examples](examples) directory, all of which are well-documented.
 
 ### Example 1 (`abbreviation`, `u32`, `available`, `get`)
-The following snippet is the complete source code for a simple program expecting an integer optimization level.
+The following snippet is the complete source code of a simple program expecting an integer optimization level.
 ```cpp
 #include <ProgramOptions.hxx>
 #include <iostream>
@@ -109,7 +109,7 @@ Let's expand on the previous code. We want it to assume a certain value for the 
 
 Furthermore, we want to implement the option `-I` to let the user specify include paths. Paths should not be converted to any arithmetic type so we simply set the type to `po::string`.
 
-By calling the method `.multi()` we're telling the library to store *all* values, not just the last one. The number of arguments can be retrieved by calling the `.size()` or the `.count()` method. The individual values may be read by means of the iterators returned by `.begin()` and `.end()`. Bear in mind that these iterators point to instances of `po::value`s, so you still need to refer to the member `.string`. One way of avoiding this is to directly use the iterators provided by `.begin<po::string>()` and `.end<po::string>()`. These random-access iterators behave as if they pointed to instances of `std::string`s. For more information, refer to [Example 4](#reading-multi-options).
+By calling the method `.multi()` we're telling the library to store *all* values, not just the last one. The number of arguments can be retrieved by calling the `.size()` or the `.count()` method. The individual values may be read by means of the iterators returned by `.begin()` and `.end()`. Bear in mind that these iterators point to instances of `po::value`s so you still need to refer to the correct member, in this case `.string`. One way of avoiding this is to use the iterators returned by `.begin<po::string>()` and `.end<po::string>()` instead. These [random-access iterators](http://en.cppreference.com/w/cpp/concept/RandomAccessIterator) behave as if they pointed to instances of `std::string`s. For more information, refer to [Example 4](#reading-multi-options).
 
 ```cpp
 #include <ProgramOptions.hxx>
@@ -134,9 +134,9 @@ int main( int argc, char** argv ) {
     std::cout << "optimization level (" << ( O.was_set() ? "manual" : "auto" ) << ") = " << O.get().u32 << '\n';
 
     auto&& I = parser[ "include-path" ];
-    // .size() and .count() return the number of given arguments. Without .multi(), their return value is always <= 1.
+    // .size() and .count() return the number of arguments given. Without .multi(), their return value would always be <= 1.
     std::cout << "include paths (" << I.size() << "):\n";
-    // Here, the non-template .begin() / .end() methods were used. Their value type is po::value,
+    // Here, the non-template .begin() / .end() methods are being used. Their value type is po::value,
     // which is not a value in itself but contains the desired values as members, i.e. i.string.
     for( auto&& i : I )
         std::cout << '\t' << i.string << '\n';
@@ -156,7 +156,7 @@ Up until now, we were missing the infamous `--help` command. While *ProgramOptio
 
 But how do we accomplish printing the options whenever there's a `--help` command? This is where callbacks come into play. Callbacks are functions that we supply to *ProgramOptions.hxx* to call. After we handed them over, we don't need to worry about invoking them as that's entirely *ProgramOptions.hxx*' job. In the code below, we pass a [lambda](http://en.cppreference.com/w/cpp/language/lambda) whose sole purpose is to print the options. Whenever the corresponding option occurs (`--help` in this case), the callback is invoked.
 
-The *unnamed parameter* `""` is used to process *non-option arguments*. Consider the command line: `gcc -O2 a.c b.c` Here, unlike `-O2`, `a.c` and `b.c` do not belong to an option and neither do they start with a hyphen. They are non-option arguments but they are important nevertheless. In *ProgramOptions.hxx*, you treat the unnamed parameter like any other option. They only differ in their [default settings](#defaults).
+The *unnamed parameter* `""` is used to process *non-option arguments*. Consider the command line: `gcc -O2 a.c b.c` Here, unlike `-O2`, `a.c` and `b.c` do not belong to an option and neither do they start with a hyphen. They are non-option arguments. In *ProgramOptions.hxx*, you treat the unnamed parameter like any other option. Options and the unnamed parameter only differ in their [default settings](#defaults).
 
 Note that, in order to pass arguments starting with a hyphen to the unnamed parameter, you'll have to pass `--` first, signifying that all further arguments are non-option arguments and that they should be passed right to the unnamed parameter without attempting to interpret them.
 ```cpp
@@ -235,23 +235,23 @@ In this example, we will employ already known mechanics but lay the focus on the
 
 #### Let's start with callbacks:
 - Multiple callbacks are invoked in order of their addition.
-- For an option of type `po::f64`, the possible parameters of a callback are: <*none*>, `std::string`, `po::f64_t`, or any type that is implicitly constructible from these.
-- When using C++14, using `auto&&` as a callback's parameter is also possible.
+- For an option of type `po::f64`, the possible parameter types of a callback are: <*none*>, `std::string`, `po::f64_t`, or any type that is implicitly constructible from these.
+- When using C++14, `auto` and `auto&&` are also a valid callback parameter type.
 
 #### About `.fallback(...)`:
-- They can be provided in any form that would also suffice when parsed, e.g. as a `std::string`.
+- Fallbacks can be provided in any form that would also suffice when parsed, i.e. also as a `std::string`.
 - If `.multi()` is set, `.fallback(...)` can take an arbitrary number of values.
 
 #### About `.type(...)`:
-- `po::void_`: No value, the option either occurred or not
-- `po::string`: Unaltered string
-- `po::i32` / `po::i64`: Signed integer; supports hexadecimal (*0x*), binary (*0b*) and positive exponents (*e0*)
+- `po::void_`: No value, the option has either occurred or not
+- `po::string`: Stores the unaltered string
+- `po::i32` / `po::i64`: Signed integer; supports decimal, hexadecimal (*0x*), binary (*0b*) and positive exponents (*e0*)
 - `po::u32` / `po::u64`: Unsigned integer; same as with signed integers
 - `po::f32` / `po::f64`: Floating point value; supports exponents (*e0*), infinities (*inf*) and NaNs (*nan*)
 
 #### Reading `.multi()` options:
-- `.begin()` and `.end()`: Iterators that point to `po::value`s; thus you have to choose the right member when dereferencing, e.g. `.begin()->i32`
-- `.begin< po::i32 >()` and `.end< po::i32 >()`: Iterators that point to values of the specified type
+- `.begin()` and `.end()`: Random-access iterators that point to `po::value`s; thus you have to choose the right member when dereferencing, e.g. `.begin()->i32`
+- `.begin< po::i32 >()` and `.end< po::i32 >()`: Random-access iterators that point to values of the specified type
 - `.get( i )` (and `.size()`): Reference to `po::value`; there's also a `.get_or( i, v )` method, returning the second parameter if the index is out of range
 - `.to_vector< po::i32 >()`: Returns a `std::vector` with elements of the specified type
 
