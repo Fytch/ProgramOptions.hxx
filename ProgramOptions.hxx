@@ -419,9 +419,12 @@ namespace po {
 			return !good();
 		}
 
-		operator T const&() const {
+		T const& get() const {
 			PROGRAMOPTIONS_ASSERT( good(), "parsing_report: cannot access data of an erroneous report" );
 			return value;
+		}
+		operator T const&() const {
+			return get();
 		}
 	};
 
