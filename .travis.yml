@@ -97,6 +97,19 @@ matrix:
       env:
         - COMPILER=clang++-4.0
         - CMAKE_FLAGS="-DCMAKE_CXX_FLAGS=-stdlib=libc++ -DCMAKE_EXE_LINKER_FLAGS=-lc++"
+    - compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-5.0
+          packages:
+            - clang-5.0
+            - libc++-dev
+            - libc++abi-dev
+      env:
+        - COMPILER=clang++-5.0
+        - CMAKE_FLAGS="-DCMAKE_CXX_FLAGS=-stdlib=libc++ -DCMAKE_EXE_LINKER_FLAGS=-lc++"
 
 script:
   - uname -a
