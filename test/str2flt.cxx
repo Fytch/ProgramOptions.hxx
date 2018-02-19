@@ -18,7 +18,7 @@ TEST_CASE( "str2flt", "[ProgramOptions]" ) {
 	CHECK( po::str2flt< double >( "-42.36E8" ) == Approx( -42.36e+8 ) );
 	CHECK( po::str2flt< double >( ".53e0" ) == Approx( 0.53 ) );
 	CHECK( po::str2flt< double >( "21.e+3" ) == Approx( 21.0e+3 ) );
-	CHECK( std::isinf( po::str2flt< double >( "15.3e+806" ) ) );
+	CHECK( std::isinf( po::str2flt< double >( "15.3e+806" ).get() ) );
 	CHECK( po::str2flt< double >( "15.3e-806" ) == Approx( 0.0 ) );
 
 	CHECK( !po::str2flt< double >( "." ).good() );
@@ -39,9 +39,9 @@ TEST_CASE( "str2flt", "[ProgramOptions]" ) {
 	CHECK(  po::str2flt< double >( "nan" ).good() );
 	CHECK( !po::str2flt< double >( "nann" ).good() );
 	CHECK( !po::str2flt< double >( "nanE0" ).good() );
-	CHECK( std::isnan( po::str2flt< double >( "nan" ) ) );
-	CHECK( std::isnan( po::str2flt< double >( "+nan" ) ) );
-	CHECK( std::isnan( po::str2flt< double >( "-nan" ) ) );
+	CHECK( std::isnan( po::str2flt< double >( "nan" ).get() ) );
+	CHECK( std::isnan( po::str2flt< double >( "+nan" ).get() ) );
+	CHECK( std::isnan( po::str2flt< double >( "-nan" ).get() ) );
 
 	CHECK( !po::str2flt< double >( "i" ).good() );
 	CHECK( !po::str2flt< double >( "in" ).good() );
@@ -53,10 +53,10 @@ TEST_CASE( "str2flt", "[ProgramOptions]" ) {
 	CHECK(  po::str2flt< double >( "infinity" ).good() );
 	CHECK( !po::str2flt< double >( "infinityy" ).good() );
 	CHECK( !po::str2flt< double >( "infinityE0" ).good() );
-	CHECK( std::isinf( po::str2flt< double >( "inf" ) ) );
-	CHECK( std::isinf( po::str2flt< double >( "+inf" ) ) );
-	CHECK( std::isinf( po::str2flt< double >( "-inf" ) ) );
-	CHECK( std::isinf( po::str2flt< double >( "infinity" ) ) );
-	CHECK( std::isinf( po::str2flt< double >( "+infinity" ) ) );
-	CHECK( std::isinf( po::str2flt< double >( "-infinity" ) ) );
+	CHECK( std::isinf( po::str2flt< double >( "inf" ).get() ) );
+	CHECK( std::isinf( po::str2flt< double >( "+inf" ).get() ) );
+	CHECK( std::isinf( po::str2flt< double >( "-inf" ).get() ) );
+	CHECK( std::isinf( po::str2flt< double >( "infinity" ).get() ) );
+	CHECK( std::isinf( po::str2flt< double >( "+infinity" ).get() ) );
+	CHECK( std::isinf( po::str2flt< double >( "-infinity" ).get() ) );
 }
