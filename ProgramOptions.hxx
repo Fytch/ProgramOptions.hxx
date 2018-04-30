@@ -1987,9 +1987,9 @@ namespace po {
 			stream << "\nAvailable options:\n";
 			bool any_abbreviations = false;
 			std::size_t max_verbose = 0;
-			for( auto&& i : object.m_options ) {
-				any_abbreviations |= i.second.get_abbreviation() != '\0';
-				max_verbose = std::max( max_verbose, i.first.size() );
+			for( auto&& opt : object.m_options ) {
+				any_abbreviations |= opt.second.get_abbreviation() != '\0';
+				max_verbose = std::max( max_verbose, opt.first.size() );
 			}
 			const bool any_verbose = max_verbose > 1;
 			if( any_verbose )
@@ -1999,12 +1999,12 @@ namespace po {
 			const std::size_t verbose_start = left_padding + abbreviation_width + separator_width;
 			const std::size_t verbose_width = std::min( any_verbose * max_verbose_width, max_verbose );
 			const std::size_t description_start = verbose_start + verbose_width + mid_padding;
-			for( auto&& i : object.m_options ) {
-				if( i.first.empty() )
+			for( auto&& opt : object.m_options ) {
+				if( opt.first.empty() )
 					continue;
 				stream << repeat{ left_padding, ' ' };
-				const char abbreviation = i.second.get_abbreviation();
-				const bool verbose = i.first.size() > 1;
+				const char abbreviation = opt.second.get_abbreviation();
+				const bool verbose = opt.first.size() > 1;
 				if( abbreviation )
 					stream << white << '-' << abbreviation;
 				else
@@ -2014,8 +2014,8 @@ namespace po {
 				else
 					stream << repeat{ separator_width, ' ' };
 				if( verbose ) {
-					stream << white << '-' << '-' << i.first;
-					const int rem = static_cast< int >( verbose_width ) - 2 - static_cast< int >( i.first.size() );
+					stream << white << '-' << '-' << opt.first;
+					const int rem = static_cast< int >( verbose_width ) - 2 - static_cast< int >( opt.first.size() );
 					if( rem >= 0 )
 						stream << repeat{ static_cast< std::size_t >( rem ) + mid_padding, ' ' };
 					else
@@ -2024,7 +2024,7 @@ namespace po {
 					stream << repeat{ verbose_width + mid_padding, ' ' };
 				}
 				std::size_t carriage = description_start;
-				std::string const& descr = i.second.get_description();
+				std::string const& descr = opt.second.get_description();
 				for( std::size_t i = 0; i < descr.size(); ++i ) {
 					const bool last = ( i + 1 < descr.size() ) && ( carriage + 1 >= console_width );
 					if( last ) {
