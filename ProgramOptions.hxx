@@ -1155,7 +1155,8 @@ namespace po {
 #endif // PROGRAMOPTIONS_DEBUG
 
 		value_vector_base& get_vector() const {
-			PROGRAMOPTIONS_ASSERT( m_data != nullptr || m_fallback != nullptr, "cannot access an option with neither user set value nor fallback" );
+			PROGRAMOPTIONS_ASSERT( m_data != nullptr || m_fallback != nullptr,
+				"cannot access an option with neither user set value nor fallback" );
 			if( m_data != nullptr )
 				return *m_data;
 			else
@@ -1477,7 +1478,8 @@ namespace po {
 
 	public:
 		option& type( value_type type ) {
-			PROGRAMOPTIONS_ASSERT( m_fallback == nullptr && m_data == nullptr && m_callbacks.empty(), "type() must be set prior to: fallback(), callback(), parsing" );
+			PROGRAMOPTIONS_ASSERT( m_fallback == nullptr && m_data == nullptr && m_callbacks.empty(),
+				"type() must be set prior to: fallback(), callback(), parsing" );
 			PROGRAMOPTIONS_ASSERT( valid_type( type ), "type: invalid value_type" );
 			mutable_operation();
 			m_type = type;
@@ -1488,13 +1490,15 @@ namespace po {
 		}
 
 		option& single() {
-			PROGRAMOPTIONS_ASSERT( m_fallback == nullptr && m_data == nullptr && m_callbacks.empty(), "single() must be set prior to: fallback(), callback(), parsing" );
+			PROGRAMOPTIONS_ASSERT( m_fallback == nullptr && m_data == nullptr && m_callbacks.empty(),
+				"single() must be set prior to: fallback(), callback(), parsing" );
 			mutable_operation();
 			m_multi = false;
 			return *this;
 		}
 		option& multi() {
-			PROGRAMOPTIONS_ASSERT( m_fallback == nullptr && m_data == nullptr && m_callbacks.empty(), "multi() must be set prior to: fallback(), callback(), parsing" );
+			PROGRAMOPTIONS_ASSERT( m_fallback == nullptr && m_data == nullptr && m_callbacks.empty(),
+				"multi() must be set prior to: fallback(), callback(), parsing" );
 			mutable_operation();
 			m_multi = true;
 			return *this;
@@ -1935,7 +1939,8 @@ namespace po {
 			return std::find_if_not( designator.begin(), designator.end(), &valid_designator_character ) == designator.end();
 		}
 		option& operator_brackets_helper( std::string&& designator ) {
-			PROGRAMOPTIONS_ASSERT( valid_designator( designator ), "operator[]: designator may only consist of letters, hyphens and underscores and mustn't start with a hyphen" );
+			PROGRAMOPTIONS_ASSERT( valid_designator( designator ),
+				"operator[]: designator may only consist of letters, hyphens and underscores and mustn't start with a hyphen" );
 			const bool empty = designator.empty();
 			const char initial = designator.size() == 1 ? designator[ 0 ] : '\0';
 			const auto result = m_options.emplace( std::move( designator ), option{} );
