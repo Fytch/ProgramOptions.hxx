@@ -1676,9 +1676,9 @@ namespace po {
 			if( !std::isalpha( short_option ) )
 				return;
 			if( std::islower( short_option ) )
-				short_option = std::toupper( short_option );
+				short_option = static_cast< char >( std::toupper( short_option ) );
 			else // if( std::isupper( short_option ) )
-				short_option = std::tolower( short_option );
+				short_option = static_cast< char >( std::tolower( short_option ) );
 			if( find_abbreviation( short_option ) != m_options.end() )
 				*m_output_destination << suggest( std::string{ '-', short_option } );
 		}
