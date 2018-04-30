@@ -251,7 +251,8 @@ namespace po {
 	// End of compatibility stuff
 
 	inline bool case_insensitive_eq( char x, char y ) {
-		return std::tolower( x ) == std::tolower( y );
+		PROGRAMOPTIONS_ASSERT( x >= 0 && y >= 0, "case_insensitive_eq: arguments must be representable as unsigned char" );
+		return x == y || std::tolower( x ) == std::tolower( y );
 	}
 
 	inline std::size_t damerau_levenshtein( char const* a, char const* b, std::size_t i, std::size_t j, std::size_t cutoff = std::numeric_limits< std::size_t >::max(), std::size_t distance = 0 ) {
@@ -1418,7 +1419,8 @@ namespace po {
 		}
 
 		option& abbreviation( char value ) {
-			PROGRAMOPTIONS_ASSERT( value == '\0' || ( std::isgraph( value ) && value != '-' ), "abbreviation must either be \'\\0\' or a printable character" );
+			PROGRAMOPTIONS_ASSERT( value >= 0 && ( value == '\0' || ( std::isgraph( value ) && value != '-' ) ),
+				"abbreviation must either be \'\\0\' or a printable character" );
 			mutable_operation();
 			m_abbreviation = value;
 			return *this;
@@ -1673,6 +1675,7 @@ namespace po {
 
 		void check_spelling( char short_option ) {
 			assert( is_verbose() );
+			assert( short_option >= 0 );
 			if( !std::isalpha( short_option ) )
 				return;
 			if( std::islower( short_option ) )
