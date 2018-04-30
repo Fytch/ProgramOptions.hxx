@@ -638,15 +638,15 @@ namespace po {
 			if( !valid )
 				return error_code::conversion_error;
 			if( expect( first, last, 'e' ) ) {
-				const bool neg = expect( first, last, '-' );
-				if( !neg )
+				const bool neg_exp = expect( first, last, '-' );
+				if( !neg_exp )
 					expect( first, last, '+' );
 				if( first == last || !is_digit( *first ) )
 					return error_code::conversion_error;
 				int exp{};
 				for( int d{}; first != last && ( d = get_digit( *first ) ) >= 0; ++first )
 					exp = 10 * exp + static_cast< int >( d );
-				if( neg )
+				if( neg_exp )
 					exp = -exp;
 				result *= std::pow( T{ 10 }, exp );
 			}
