@@ -1636,6 +1636,7 @@ namespace po {
 	class parser {
 		using options_t = std::unordered_map< std::string, option >;
 		options_t m_options;
+		std::vector< options_t::value_type* > m_order;
 		char const* m_program_name = "";
 		std::ostream* m_output_destination;
 
@@ -1942,10 +1943,14 @@ namespace po {
 		option& operator_brackets_helper( std::string&& designator ) {
 			PROGRAMOPTIONS_ASSERT( valid_designator( designator ),
 				"operator[]: designator may only consist of letters, hyphens and underscores and mustn't start with a hyphen" );
+			// needed to provide strong exception safety
+			if( m_order.capacity() == m_order.size() )
+				m_order.reserve( m_order.size() + m_order.size() / 2 + 1 );
 			const bool empty = designator.empty();
 			const char initial = designator.size() == 1 ? designator[ 0 ] : '\0';
 			const auto result = m_options.emplace( std::move( designator ), option{} );
 			if( result.second ) {
+				m_order.emplace_back( &*result.first );
 				if( initial )
 					result.first->second.abbreviation( initial );
 				if( empty )
@@ -2000,7 +2005,8 @@ namespace po {
 			const std::size_t verbose_start = left_padding + abbreviation_width + separator_width;
 			const std::size_t verbose_width = std::min( any_verbose * max_verbose_width, max_verbose );
 			const std::size_t description_start = verbose_start + verbose_width + mid_padding;
-			for( auto&& opt : object.m_options ) {
+			for( auto iter = object.m_order.begin(); iter != object.m_order.end(); ++iter ) {
+				auto& opt = **iter;
 				if( opt.first.empty() )
 					continue;
 				stream << repeat{ left_padding, ' ' };
