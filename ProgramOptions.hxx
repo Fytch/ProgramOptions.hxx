@@ -1793,17 +1793,17 @@ namespace po {
 
 	public:
 		bool wellformed() const {
-			for( auto&& i : m_options ) {
-				if( !valid_designator( i.first ) )
+			for( auto&& opt : m_options ) {
+				if( !valid_designator( opt.first ) )
 					return false;
-				if( i.first.size() == 0 && i.second.get_abbreviation() != '\0' )
+				if( opt.first.size() == 0 && opt.second.get_abbreviation() != '\0' )
 					return false;
-				if( i.first.size() == 1 && i.second.get_abbreviation() != i.first[ 0 ] )
+				if( opt.first.size() == 1 && opt.second.get_abbreviation() != opt.first[ 0 ] )
 					return false;
 			}
 			std::string abbreviations;
-			for( auto&& i : m_options )
-				if( char a = i.second.get_abbreviation() )
+			for( auto&& opt : m_options )
+				if( char a = opt.second.get_abbreviation() )
 					abbreviations.push_back( a );
 			std::sort( abbreviations.begin(), abbreviations.end() );
 			if( std::adjacent_find( abbreviations.begin(), abbreviations.end() ) != abbreviations.end() )
@@ -1813,7 +1813,8 @@ namespace po {
 
 		bool operator()( int int_argc, char** argv ) {
 			PROGRAMOPTIONS_ASSERT( wellformed(), "cannot parse with an ill-formed parser" );
-			PROGRAMOPTIONS_ASSERT( std::none_of( m_options.begin(), m_options.end(), []( options_t::value_type const& x ){ return x.second.was_set(); } ), "some options were already set" );
+			PROGRAMOPTIONS_ASSERT( std::none_of( m_options.begin(), m_options.end(), []( options_t::value_type const& x ){ return x.second.was_set(); } ),
+				"some options were already set" );
 			assert( int_argc >= 0 );
 			const auto argc = static_cast< std::size_t >( int_argc );
 			if( argc == 0 )
@@ -1919,8 +1920,8 @@ namespace po {
 					}
 				}
 			}
-			for( auto&& i : m_options )
-				i.second.make_immutable();
+			for( auto&& opt : m_options )
+				opt.second.make_immutable();
 			return good;
 		}
 		bool parse( int argc, char** argv ) {
