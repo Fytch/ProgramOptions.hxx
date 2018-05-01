@@ -1154,12 +1154,15 @@ namespace po {
 		}
 #endif // PROGRAMOPTIONS_DEBUG
 
-		value_vector_base& get_vector() const {
+		value_vector_base const& get_vector() const {
 			PROGRAMOPTIONS_ASSERT( available(), "cannot access an option with neither user set value nor fallback" );
 			if( m_data != nullptr )
 				return *m_data;
 			else
 				return *m_fallback;
+		}
+		value_vector_base& get_vector() {
+			return const_cast< value_vector_base& >( static_cast< option const& >( *this ).get_vector() );
 		}
 
 		parsing_report< value > make_value() const {
