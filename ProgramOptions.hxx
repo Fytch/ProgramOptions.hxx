@@ -1155,8 +1155,7 @@ namespace po {
 #endif // PROGRAMOPTIONS_DEBUG
 
 		value_vector_base& get_vector() const {
-			PROGRAMOPTIONS_ASSERT( m_data != nullptr || m_fallback != nullptr,
-				"cannot access an option with neither user set value nor fallback" );
+			PROGRAMOPTIONS_ASSERT( available(), "cannot access an option with neither user set value nor fallback" );
 			if( m_data != nullptr )
 				return *m_data;
 			else
