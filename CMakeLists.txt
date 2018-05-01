@@ -1,5 +1,8 @@
-cmake_minimum_required( VERSION 2.8.8 )
+cmake_minimum_required( VERSION 3.1 )
 project( ProgramOptions )
+set( CMAKE_CXX_STANDARD 11 )
+set( CMAKE_CXX_STANDARD_REQUIRED ON )
+set( CMAKE_CXX_EXTENSIONS OFF )
 
 option( PROGRAMOPTIONS_NO_EXCEPTIONS "disable exceptions" OFF )
 option( PROGRAMOPTIONS_NO_COLORS "disable colored output" OFF )
@@ -18,7 +21,7 @@ include_directories( "./" )
 include_directories( "./ext/" )
 
 if( PROGRAMOPTIONS_GNU_OPTIONS )
-	set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wno-deprecated -std=c++14 -fno-rtti" )
+	set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wno-deprecated -fno-rtti" )
 	set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -ggdb -fno-omit-frame-pointer" )
 	set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -march=native -DNDEBUG -s -flto" )
 endif()
