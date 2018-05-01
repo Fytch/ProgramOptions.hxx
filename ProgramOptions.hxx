@@ -1969,7 +1969,7 @@ namespace po {
 			return operator_brackets_helper( std::move( designator ) );
 		}
 
-		friend std::ostream& operator<<( std::ostream& stream, parser const& object ) {
+		void print_help( std::ostream& stream ) const {
 			enum : std::size_t {
 				console_width = 80 - 1, // -1 because writing until the real end returns the carriage
 				left_padding = 2,
@@ -1979,12 +1979,12 @@ namespace po {
 				mid_padding = 2,
 				paragraph_indenture = 2
 			};
-			PROGRAMOPTIONS_ASSERT( object.wellformed(), "cannot print an ill-formed parser" );
-			stream << "Usage:\n  " << object.m_program_name;
-			if( !object.m_options.empty() )
+			PROGRAMOPTIONS_ASSERT( wellformed(), "cannot print an ill-formed parser" );
+			stream << "Usage:\n  " << m_program_name;
+			if( !m_options.empty() )
 				stream << " [options]";
-			const auto unnamed = object.m_options.find( "" );
-			if( unnamed != object.m_options.end() ) {
+			const auto unnamed = m_options.find( "" );
+			if( unnamed != m_options.end() ) {
 				stream << " [argument";
 				if( unnamed->second.is_multi() )
 					stream << "s...";
@@ -1993,7 +1993,7 @@ namespace po {
 			stream << "\nAvailable options:\n";
 			bool any_abbreviations = false;
 			std::size_t max_verbose = 0;
-			for( auto&& opt : object.m_options ) {
+			for( auto&& opt : m_options ) {
 				any_abbreviations |= opt.second.get_abbreviation() != '\0';
 				max_verbose = std::max( max_verbose, opt.first.size() );
 			}
@@ -2005,7 +2005,7 @@ namespace po {
 			const std::size_t verbose_start = left_padding + abbreviation_width + separator_width;
 			const std::size_t verbose_width = std::min( any_verbose * max_verbose_width, max_verbose );
 			const std::size_t description_start = verbose_start + verbose_width + mid_padding;
-			for( auto iter = object.m_order.begin(); iter != object.m_order.end(); ++iter ) {
+			for( auto iter = m_order.begin(); iter != m_order.end(); ++iter ) {
 				auto& opt = **iter;
 				if( opt.first.empty() )
 					continue;
@@ -2056,9 +2056,13 @@ namespace po {
 				}
 				stream << '\n';
 			}
-			return stream;
 		}
 	};
+
+	inline std::ostream& operator<<( std::ostream& stream, parser const& object ) {
+		object.print_help( stream );
+		return stream;
+	}
 }
 
 #endif // !PROGRAMOPTIONS_HXX_INCLUDED
