@@ -1633,6 +1633,62 @@ namespace po {
 			}
 			return result.error;
 		}
+
+		void print_data( std::ostream& stream ) const {
+			if( !available() ) {
+				if( is_multi() )
+					stream << "[]";
+				else
+					stream << "<unavailable>";
+				return;
+			}
+
+			void( *printer )( std::ostream&, value const& );
+			switch( get_type() ) {
+			case void_:
+				printer = []( std::ostream& s, value const& /*v*/ ){ s << "<void>"; };
+				break;
+			case string:
+				printer = []( std::ostream& s, value const& v ){ s << '"' << v.string << '"'; };
+				break;
+			case i32:
+				printer = []( std::ostream& s, value const& v ){ s << v.i32; };
+				break;
+			case i64:
+				printer = []( std::ostream& s, value const& v ){ s << v.i64; };
+				break;
+			case u32:
+				printer = []( std::ostream& s, value const& v ){ s << v.u32; };
+				break;
+			case u64:
+				printer = []( std::ostream& s, value const& v ){ s << v.u64; };
+				break;
+			case f32:
+				printer = []( std::ostream& s, value const& v ){ s << v.f32; };
+				break;
+			case f64:
+				printer = []( std::ostream& s, value const& v ){ s << v.f64; };
+				break;
+			default:
+				assert( false );
+			}
+
+			if( is_multi() )
+				stream << "[ ";
+			value_vector_base const& data = get_vector();
+			auto begin = data.begin();
+			auto end = data.end();
+			if( begin != end ) {
+				for( ;; ) {
+					( *printer )( stream, *begin++ );
+					if( begin == end )
+						break;
+					stream << ", ";
+				}
+			}
+			if( is_multi() )
+				stream << " ]";
+		}
 	};
 
 	class parser {
@@ -1971,6 +2027,18 @@ namespace po {
 			return operator_brackets_helper( std::move( designator ) );
 		}
 
+		void print_data( std::ostream& stream, char delim = ':' ) const {
+			for( auto iter = m_order.begin(); iter != m_order.end(); ++iter ) {
+				auto& opt = **iter;
+				if( opt.first.empty() )
+					stream << "<unnamed>";
+				else
+					stream << opt.first;
+				stream << delim;
+				opt.second.print_data(stream);
+				stream << '\n';
+			}
+		}
 		void print_help( std::ostream& stream ) const {
 			enum : std::size_t {
 				console_width = 80 - 1, // -1 because writing until the real end returns the carriage
