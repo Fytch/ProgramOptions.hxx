@@ -21,6 +21,10 @@
 #include <cmath>
 #include <limits>
 #include <vector>
+#include <deque>
+#include <list>
+#include <stack>
+#include <queue>
 #include <memory>
 #include <unordered_map>
 #include <type_traits>
@@ -356,6 +360,50 @@ namespace po {
 	}
 	template< value_type type >
 	using vt2type = typename detail::vt2type_impl< type >::type;
+
+	namespace detail {
+		template<
+			typename T,
+			bool is_integral = std::is_integral< T >::value,
+			bool is_floating_point = std::is_floating_point< T >::value,
+			bool is_signed = std::numeric_limits< T >::is_signed
+		>
+		struct type2vt_impl {
+			// Not using false because then it would trigger without instatiation.
+			// Instead, use an expression that always evaluates to false but depends on T.
+			static_assert( !std::is_same< T, T >::value, "type2vt: unsupported type" );
+			static constexpr value_type value = void_;
+		};
+		template<>
+		struct type2vt_impl< void, false, false, false > {
+			static constexpr value_type value = void_;
+		};
+		template<>
+		struct type2vt_impl< std::string, false, false, false > {
+			static constexpr value_type value = string;
+		};
+		template< typename T >
+		struct type2vt_impl< T, true, false, true > {
+			static constexpr std::size_t T_bits = sizeof( T ) * std::numeric_limits< unsigned char >::digits;
+			static_assert( T_bits == 32 || T_bits == 64, "type2vt: only 32 or 64 bit wide signed integral types supported" );
+			static constexpr value_type value = ( T_bits == 32 ) ? i32 : i64;
+		};
+		template< typename T >
+		struct type2vt_impl< T, true, false, false > {
+			static constexpr std::size_t T_bits = sizeof( T ) * std::numeric_limits< unsigned char >::digits;
+			static_assert( T_bits == 32 || T_bits == 64, "type2vt: only 32 or 64 bit wide unsigned integral types supported" );
+			static constexpr value_type value = ( T_bits == 32 ) ? u32 : u64;
+		};
+		template< typename T >
+		struct type2vt_impl< T, false, true, true > {
+			static constexpr std::size_t T_bits = sizeof( T ) * std::numeric_limits< unsigned char >::digits;
+			static_assert( T_bits == 32 || T_bits == 64, "type2vt: only 32 or 64 bit wide floating point types supported" );
+			static constexpr value_type value = ( T_bits == 32 ) ? f32 : f64;
+		};
+	}
+	template< typename T >
+	struct type2vt : detail::type2vt_impl< typename std::remove_cv< T >::type > {
+	};
 
 	template< typename T >
 	T pow( T base, unsigned exp ) {
@@ -1602,6 +1650,47 @@ namespace po {
 			mutable_operation();
 			m_callbacks.clear();
 			return *this;
+		}
+
+		template< typename T >
+		option& bind_container( T& target ) {
+			using value_type = typename T::value_type;
+			type( type2vt< value_type >::value );
+			multi();
+			callback( [ &target ]( value_type const& x ){ target.push_back( x ); } );
+			return *this;
+		}
+
+		template< typename T >
+		option& bind( T& target ) {
+			type( type2vt< T >::value );
+			single();
+			callback( [ &target ]( T const& x ){ target = x; } );
+			return *this;
+		}
+		template< typename T >
+		option& bind( std::vector< T >& target ) {
+			return bind_container( target );
+		}
+		template< typename T >
+		option& bind( std::deque< T >& target ) {
+			return bind_container( target );
+		}
+		template< typename T >
+		option& bind( std::list< T >& target ) {
+			return bind_container( target );
+		}
+		template< typename T >
+		option& bind( std::stack< T >& target ) {
+			return bind_container( target );
+		}
+		template< typename T >
+		option& bind( std::queue< T >& target ) {
+			return bind_container( target );
+		}
+		template< typename T >
+		option& bind( std::priority_queue< T >& target ) {
+			return bind_container( target );
 		}
 
 	private:
