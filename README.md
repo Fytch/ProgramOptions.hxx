@@ -15,6 +15,7 @@
   - [Example 2 (`fallback`, `was_set`, `string`, `multi`)](#example-2-fallback-was_set-string-multi)
   - [Example 3 (`description`, `callback`, unnamed parameter)](#example-3-description-callback-unnamed-parameter)
   - [Example 4 (more `callback`s, more `fallback`s, `f64`, `to_vector`)](#example-4-more-callbacks-more-fallbacks-f64-to_vector)
+  - [Example 5 (`bind`)](#example-5-bind)
   - [Miscellaneous functions](#miscellaneous-functions)
 - [Defaults](#defaults)
 - [Flags](#flags)
@@ -104,6 +105,7 @@ optimization level set to 255
 $ ./optimization -O3 --optimization 1e2
 optimization level set to 100
 ```
+
 ### Example 2 (`fallback`, `was_set`, `string`, `multi`)
 Let's expand on the previous code. We want it to assume a certain value for the option `optimization` even if the user sets none. This can be achieved through the `.fallback(...)` method. After parsing, the method `.was_set()` tells us whether the option was actually set by the user or fell back on the default value.
 
@@ -230,6 +232,7 @@ optimization level (manual) = 3
 include paths (1):
         ./include
 ```
+
 ### Example 4 (more `callback`s, more `fallback`s, `f64`, `to_vector`)
 In this example, we will employ already known mechanics but lay the focus on their versatility.
 
@@ -303,6 +306,65 @@ successfully parsed 12 which equals 12
 successfully parsed NaN which equals nan
 ( + 12 nan ) = nan
 ```
+
+### Example 5 (`bind`)
+Until now, we defined the type, plurality and fallback value of each option manually by invoking `.type`, `.single`/`.multi` and `.fallback`. If we just want to extract the values from the parser and store them in a variable, `.bind` offers a more convenient and safer way of achieving this and ought to be preferred. `.bind` internally sets the type and the plurality (`.single`/`.multi`) of the corresponding option (but not the fallback).
+
+We may bind options to variables of type `std::string`, to 32- or 64-bit signed integers, unsigned integer, floating point numbers or to STL containers consisting of elements of such type. If we want to use custom container types and/or custom insertion routines, we have to use `.bind_container( container&, inserter )` which accepts a binary function with the signature `inserter( container_t&, container_t::value_type const& )` (up to implicit conversion).
+
+```cpp
+#include <ProgramOptions.hxx>
+#include <cstdint>
+#include <vector>
+#include <string>
+#include <iostream>
+#include <string_view>
+
+int main( int argc, char** argv ) {
+	po::parser parser;
+
+	std::uint32_t optimization = 0;	// the value we set here acts as an implicit fallback
+	parser[ "optimization" ]
+		.abbreviation( 'O' )
+		.description( "set the optimization level (default: -O0)" )
+		.bind( optimization );		// write the parsed value to the variable 'optimization'
+									// .bind( optimization ) automatically calls .type( po::u32 ) and .single()
+
+	std::vector< std::string > include_paths;
+	parser[ "include-path" ]
+		.abbreviation( 'I' )
+		.description( "add an include path" )
+		.bind( include_paths );		// append paths to the vector 'include_paths'
+
+	parser[ "help" ]
+		.abbreviation( '?' )
+		.description( "print this help screen" );
+
+	std::deque< std::string > files;
+	parser[ "" ]
+		.bind( files );				// append paths to the deque 'include_paths
+
+	if( !parser( argc, argv ) )
+		return -1;
+
+	// we don't want to print anything else if the help screen has been displayed
+	if( parser[ "help" ].was_set() ) {
+		std::cout << parser << '\n';
+		return 0;
+	}
+
+	// print the parsed values
+	// note that we don't need to access parser anymore; all data is stored in the bound variables
+	std::cout << "optimization level = " << optimization << '\n';
+	std::cout << "include files (" << files.size() << "):\n";
+	for( auto&& i : files )
+		std::cout << '\t' << i << '\n';
+	std::cout << "include paths (" << include_paths.size() << "):\n";
+	for( auto&& i : include_paths )
+		std::cout << '\t' << i << '\n';
+}
+```
+
 ### Miscellaneous functions
 
 #### `void po::parser::silent()`
