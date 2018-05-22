@@ -846,20 +846,17 @@ namespace po {
 	namespace detail {
 		template< typename fun_t, typename... args_t >
 		class is_invocable_sfinae {
-			using false_t = char[ 1 ];
-			using true_t = char[ 2 ];
-
 			template< typename _fun_t, typename... _args_t >
-			static false_t& test( ... );
+			static std::false_type test( ... );
 			template< typename _fun_t, typename... _args_t >
-			static true_t& test( decltype( std::declval< _fun_t >()( std::declval< _args_t >()... ) )* );
+			static std::true_type test( decltype( std::declval< _fun_t >()( std::declval< _args_t >()... ) )* );
 
 		public:
-			static constexpr bool value = sizeof( test< fun_t, args_t... >( 0 ) ) == sizeof( true_t );
+			using type = decltype( test< fun_t, args_t... >( 0 ) );
 		};
 	}
 	template< typename fun_t, typename... args_t >
-	struct is_invocable : public std::integral_constant< bool, detail::is_invocable_sfinae< fun_t, args_t... >::value > {
+	struct is_invocable : public detail::is_invocable_sfinae< fun_t, args_t... >::type {
 	};
 
 	struct callback_base {
