@@ -1528,7 +1528,7 @@ namespace po {
 
 	public:
 		option& type( value_type type ) {
-			PROGRAMOPTIONS_ASSERT( m_fallback == nullptr && m_data == nullptr && m_callbacks.empty(),
+			PROGRAMOPTIONS_ASSERT( ( m_type == type ) || ( m_fallback == nullptr && m_data == nullptr && m_callbacks.empty() ),
 				"type() must be set prior to: fallback(), callback(), parsing" );
 			PROGRAMOPTIONS_ASSERT( valid_type( type ), "type: invalid value_type" );
 			mutable_operation();
@@ -1540,14 +1540,14 @@ namespace po {
 		}
 
 		option& single() {
-			PROGRAMOPTIONS_ASSERT( m_fallback == nullptr && m_data == nullptr && m_callbacks.empty(),
+			PROGRAMOPTIONS_ASSERT( ( m_multi == false ) || ( m_fallback == nullptr && m_data == nullptr && m_callbacks.empty() ),
 				"single() must be set prior to: fallback(), callback(), parsing" );
 			mutable_operation();
 			m_multi = false;
 			return *this;
 		}
 		option& multi() {
-			PROGRAMOPTIONS_ASSERT( m_fallback == nullptr && m_data == nullptr && m_callbacks.empty(),
+			PROGRAMOPTIONS_ASSERT( ( m_multi == true ) || ( m_fallback == nullptr && m_data == nullptr && m_callbacks.empty() ),
 				"multi() must be set prior to: fallback(), callback(), parsing" );
 			mutable_operation();
 			m_multi = true;
