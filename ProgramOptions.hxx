@@ -1166,6 +1166,42 @@ namespace po {
 		return object -= n;
 	}
 
+	namespace detail {
+		template< typename container_t, typename... args_t >
+		class has_push_back_sfinae {
+			template< typename _container_t, typename... _args_t >
+			static std::false_type test( ... );
+			template< typename _container_t, typename... _args_t >
+			static std::true_type test( decltype( std::declval< _container_t >().push_back( std::declval< _args_t >()... ) )* );
+
+		public:
+			using type = decltype( test< container_t, args_t... >( 0 ) );
+		};
+	}
+	template< typename container_t, typename... args_t >
+	struct has_push_back : public detail::has_push_back_sfinae< container_t, args_t... >::type {
+	};
+	template< typename container_t >
+	using has_push_back_vt = has_push_back< container_t, typename container_t::value_type >;
+
+	namespace detail {
+		template< typename container_t, typename... args_t >
+		class has_push_sfinae {
+			template< typename _container_t, typename... _args_t >
+			static std::false_type test( ... );
+			template< typename _container_t, typename... _args_t >
+			static std::true_type test( decltype( std::declval< _container_t >().push( std::declval< _args_t >()... ) )* );
+
+		public:
+			using type = decltype( test< container_t, args_t... >( 0 ) );
+		};
+	}
+	template< typename container_t, typename... args_t >
+	struct has_push : public detail::has_push_sfinae< container_t, args_t... >::type {
+	};
+	template< typename container_t >
+	using has_push_vt = has_push< container_t, typename container_t::value_type >;
+
 	class option {
 		char m_abbreviation = '\0';
 		std::string m_description;
@@ -1651,13 +1687,31 @@ namespace po {
 			return *this;
 		}
 
-		template< typename T >
-		option& bind_container( T& target ) {
-			using value_type = typename T::value_type;
+		template< typename container_t, typename invocable_t >
+		option& bind_container( container_t& container, invocable_t inserter ) {
+			using value_type = typename container_t::value_type;
 			type( type2vt< value_type >::value );
 			multi();
-			callback( [ &target ]( value_type const& x ){ target.push_back( x ); } );
+			callback( [ &container, inserter ]( value_type const& x ){ inserter( container, x ); } );
 			return *this;
+		}
+		template< typename container_t >
+		option& bind_container( container_t& container, typename std::enable_if< has_push_back_vt< container_t >::value >::type* = nullptr ) {
+			using value_type = typename container_t::value_type;
+			return bind_container( container,
+				[]( container_t& container, value_type const& value ){
+					container.push_back( value );
+				}
+			);
+		}
+		template< typename container_t >
+		option& bind_container( container_t& container, typename std::enable_if< has_push_vt< container_t >::value >::type* = nullptr ) {
+			using value_type = typename container_t::value_type;
+			return bind_container( container,
+				[]( container_t& container, value_type const& value ){
+					container.push( value );
+				}
+			);
 		}
 
 		template< typename T >
