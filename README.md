@@ -315,10 +315,10 @@ We may bind options to variables of type `std::string`, to 32- or 64-bit signed 
 ```cpp
 #include <ProgramOptions.hxx>
 #include <cstdint>
-#include <vector>
 #include <string>
+#include <vector>
+#include <deque>
 #include <iostream>
-#include <string_view>
 
 int main( int argc, char** argv ) {
     po::parser parser;
