@@ -1539,25 +1539,27 @@ namespace po {
 			return m_type;
 		}
 
-		option& single() {
-			PROGRAMOPTIONS_ASSERT( ( m_multi == false ) || ( m_fallback == nullptr && m_data == nullptr && m_callbacks.empty() ),
-				"single() must be set prior to: fallback(), callback(), parsing" );
-			mutable_operation();
-			m_multi = false;
-			return *this;
-		}
-		option& multi() {
-			PROGRAMOPTIONS_ASSERT( ( m_multi == true ) || ( m_fallback == nullptr && m_data == nullptr && m_callbacks.empty() ),
+		option& multi( bool make_multi ) {
+			PROGRAMOPTIONS_ASSERT( ( m_multi == make_multi ) || ( m_fallback == nullptr && m_data == nullptr && m_callbacks.empty() ),
 				"multi() must be set prior to: fallback(), callback(), parsing" );
 			mutable_operation();
-			m_multi = true;
+			m_multi = make_multi;
 			return *this;
 		}
-		bool is_single() const {
-			return !is_multi();
+		option& single( bool make_single ) {
+			return multi( !make_single );
+		}
+		option& multi() {
+			return multi( true );
+		}
+		option& single() {
+			return single( true );
 		}
 		bool is_multi() const {
 			return m_multi;
+		}
+		bool is_single() const {
+			return !is_multi();
 		}
 
 	private:
