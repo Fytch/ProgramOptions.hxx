@@ -18,7 +18,7 @@ elseif( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
 endif()
 
 include_directories( "./" )
-include_directories( "./ext/" )
+include_directories( "./ext/Catch2/single_include/catch2/" )
 
 if( PROGRAMOPTIONS_GNU_OPTIONS )
 	set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wno-deprecated -fno-rtti" )
