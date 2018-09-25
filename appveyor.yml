@@ -1,6 +1,6 @@
 version: '{build}'
 
-shallow_clone: true
+shallow_clone: false
 
 environment:
   MSBUILD_FLAGS: /verbosity:minimal /maxcpucount
@@ -23,14 +23,17 @@ matrix:
 
 configuration: Debug
 
-init: []
+init:
+  - uname -a
+  - cmake --version
+  - msbuild /version
 
-install: []
+install:
+  - git submodule update --init --recursive
 
 before_build:
   - mkdir bin
   - cd bin
-  - cmake --version
   - cmake .. -G "%CMAKE_GEN%" -DPROGRAMOPTIONS_NO_COLORS=ON
 
 build_script:
