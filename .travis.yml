@@ -32,6 +32,22 @@ matrix:
           packages:
             - g++-6
       env: COMPILER=g++-6
+    - compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      env: COMPILER=g++-7
+    - compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+      env: COMPILER=g++-8
     - compiler: clang
       addons:
         apt:
@@ -109,6 +125,19 @@ matrix:
             - libc++abi-dev
       env:
         - COMPILER=clang++-5.0
+        - CMAKE_FLAGS="-DCMAKE_CXX_FLAGS=-stdlib=libc++ -DCMAKE_EXE_LINKER_FLAGS=-lc++"
+    - compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-6.0
+          packages:
+            - clang-6.0
+            - libc++-dev
+            - libc++abi-dev
+      env:
+        - COMPILER=clang++-6.0
         - CMAKE_FLAGS="-DCMAKE_CXX_FLAGS=-stdlib=libc++ -DCMAKE_EXE_LINKER_FLAGS=-lc++"
 
 script:
