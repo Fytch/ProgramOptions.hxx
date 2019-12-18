@@ -1,7 +1,7 @@
 language: cpp
 
-dist: trusty
-sudo: required
+sudo: false
+dist: xenial
 
 notifications:
   email: false
