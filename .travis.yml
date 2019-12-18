@@ -143,29 +143,25 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-5.0
+            - sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-5.0 main'
+              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
           packages:
             - clang-5.0
-            - libc++-dev
-            - libc++abi-dev
       env:
         - CC=clang-5.0
         - CXX=clang++-5.0
-        - CMAKE_FLAGS="-DCMAKE_CXX_FLAGS=-stdlib=libc++ -DCMAKE_EXE_LINKER_FLAGS=-lc++"
     - compiler: clang
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-6.0
+            - sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-6.0 main'
+              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
           packages:
             - clang-6.0
-            - libc++-dev
-            - libc++abi-dev
       env:
         - CC=clang-6.0
         - CXX=clang++-6.0
-        - CMAKE_FLAGS="-DCMAKE_CXX_FLAGS=-stdlib=libc++ -DCMAKE_EXE_LINKER_FLAGS=-lc++"
     - compiler: clang
       addons:
         apt:
@@ -178,7 +174,6 @@ matrix:
       env:
         - CC=clang-7
         - CXX=clang++-7
-        - CMAKE_FLAGS="-DCMAKE_CXX_FLAGS=-stdlib=libc++ -DCMAKE_EXE_LINKER_FLAGS=-lc++"
     - compiler: clang
       addons:
         apt:
@@ -191,7 +186,6 @@ matrix:
       env:
         - CC=clang-8
         - CXX=clang++-8
-        - CMAKE_FLAGS="-DCMAKE_CXX_FLAGS=-stdlib=libc++ -DCMAKE_EXE_LINKER_FLAGS=-lc++"
     - compiler: clang
       addons:
         apt:
@@ -204,7 +198,6 @@ matrix:
       env:
         - CC=clang-9
         - CXX=clang++-9
-        - CMAKE_FLAGS="-DCMAKE_CXX_FLAGS=-stdlib=libc++ -DCMAKE_EXE_LINKER_FLAGS=-lc++"
 
 script:
   - uname -a
