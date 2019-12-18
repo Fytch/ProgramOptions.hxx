@@ -109,7 +109,7 @@ namespace po {
 #endif // PROGRAMOPTIONS_WINDOWS
 
 		color_resetter( std::ostream& stream, color_t color )
-			: m_stream{ stream } {
+			: m_stream(stream) { // don't use an initializer list here because of gcc-4.8.5
 #ifdef PROGRAMOPTIONS_WINDOWS
 			m_stream << std::flush;
 			m_console = GetStdHandle( STD_OUTPUT_HANDLE );
