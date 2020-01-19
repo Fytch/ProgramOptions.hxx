@@ -64,11 +64,26 @@ Using this sample is only recommended if you are already somewhat familiar with 
 <sup>1</sup> Note that `-version` (with only a single hyphen) would be interpreted as the option `-v` with the argument `ersion`.
 
 ## Integration
-*ProgramOptions.hxx* is very easy to integrate. After downloading the header file, all that it takes is a simple:
+*ProgramOptions.hxx* is very easy to integrate. After downloading the header file from the ```include``` folder and putting it into your project folder, all it takes is a simple:
 ```cpp
 #include "ProgramOptions.hxx"
 ```
 Don't forget to compile with C++11 enabled, i.e. with `-std=c++11`.
+
+### git
+If you want to integrate *ProgramOptions.hxx* into your project that uses [git](https://git-scm.com/), you can write:
+```
+git submodule add https://github.com/Fytch/ProgramOptions.hxx third_party/ProgramOptions.hxx
+```
+You may replace ```third_party/ProgramOptions.hxx``` by any path.
+
+### CMake
+If you want to integrate *ProgramOptions.hxx* into your project that uses [CMake](https://cmake.org/), add the following to your ```CMakeLists.txt```:
+```cmake
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/third_party/ProgramOptions.hxx")
+target_link_libraries(YourExecutable ProgramOptionsHxx)
+```
+You must replace ```/third_party/ProgramOptions.hxx``` by the correct path and ```YourExecutable``` by the targets that use *ProgramOptions.hxx*.
 
 ## Usage
 Using *ProgramOptions.hxx* is straightforward; we'll explain it by means of practical examples. All examples shown here and more can be found in the [/examples](examples) directory, all of which are well-documented.
