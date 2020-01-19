@@ -17,8 +17,7 @@ elseif( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
 	set( PROGRAMOPTIONS_MS_OPTIONS TRUE )
 endif()
 
-include_directories( "./" )
-include_directories( "./ext/Catch2/single_include/catch2/" )
+include_directories( "${CMAKE_CURRENT_LIST_DIR}/" )
 
 if( PROGRAMOPTIONS_GNU_OPTIONS )
 	set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wno-deprecated -fno-rtti" )
@@ -40,8 +39,11 @@ if( PROGRAMOPTIONS_NO_COLORS )
 endif()
 
 if( PROGRAMOPTIONS_BUILD_TEST )
+	add_subdirectory( "${CMAKE_CURRENT_LIST_DIR}/ext/Catch2" )
+
 	file( GLOB_RECURSE test_src test/*.cxx )
 	add_executable( Test ${test_src} )
+	target_link_libraries( Test Catch2::Catch2 )
 endif()
 
 if( PROGRAMOPTIONS_BUILD_EXAMPLES )

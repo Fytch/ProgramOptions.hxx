@@ -1,4 +1,4 @@
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 #undef NDEBUG
 #undef PROGRAMOPTIONS_NO_EXCEPTIONS
 #include <ProgramOptions.hxx>
