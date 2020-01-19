@@ -17,7 +17,7 @@ elseif( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
 	set( PROGRAMOPTIONS_MS_OPTIONS TRUE )
 endif()
 
-include_directories( "${CMAKE_CURRENT_LIST_DIR}/" )
+include_directories( "${CMAKE_CURRENT_LIST_DIR}/include/" )
 
 if( PROGRAMOPTIONS_GNU_OPTIONS )
 	set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wno-deprecated -fno-rtti" )
