@@ -94,16 +94,16 @@ The following snippet is the complete source code of a simple program expecting 
 #include <ProgramOptions.hxx>
 #include <iostream>
 
-int main( int argc, char** argv ) {
+int main(int argc, char** argv) {
     po::parser parser;
-    parser[ "optimization" ]    // corresponds to --optimization
-        .abbreviation( 'O' )    // corresponds to -O
-        .type( po::u32 );       // expects an unsigned 32-bit integer
+    parser["optimization"]    // corresponds to --optimization
+        .abbreviation('O')    // corresponds to -O
+        .type(po::u32);       // expects an unsigned 32-bit integer
 
-    parser( argc, argv );       // parses the command line arguments
+    parser(argc, argv);       // parses the command line arguments
 
-    auto&& O = parser[ "optimization" ];
-    if( !O.available() )
+    auto&& O = parser["optimization"];
+    if(!O.available())
         std::cout << "no optimization level set!\n";
     else
         std::cout << "optimization level set to " << O.get().u32 << '\n';
@@ -132,30 +132,30 @@ By calling the method `.multi()` we're telling the library to store *all* values
 #include <ProgramOptions.hxx>
 #include <iostream>
 
-int main( int argc, char** argv ) {
+int main(int argc, char** argv) {
     po::parser parser;
-    parser[ "optimization" ]
-        .abbreviation( 'O' )
-        .type( po::u32 )
-        .fallback( 0 );         // if --optimization is not explicitly specified, assume 0
+    parser["optimization"]
+        .abbreviation('O')
+        .type(po::u32)
+        .fallback(0);         // if --optimization is not explicitly specified, assume 0
 
-    parser[ "include-path" ]    // corresponds to --include-path
-        .abbreviation( 'I' )    // corresponds to -I
-        .type( po::string )     // expects a string
-        .multi();               // allows multiple arguments for the same option
+    parser["include-path"]    // corresponds to --include-path
+        .abbreviation('I')    // corresponds to -I
+        .type(po::string)     // expects a string
+        .multi();             // allows multiple arguments for the same option
 
-    parser( argc, argv );
+    parser(argc, argv);
 
-    auto&& O = parser[ "optimization" ];
+    auto&& O = parser["optimization"];
     // .was_set() reports whether the option was specified by the user or relied on the predefined fallback value.
-    std::cout << "optimization level (" << ( O.was_set() ? "manual" : "auto" ) << ") = " << O.get().u32 << '\n';
+    std::cout << "optimization level (" << (O.was_set() ? "manual" : "auto") << ") = " << O.get().u32 << '\n';
 
-    auto&& I = parser[ "include-path" ];
+    auto&& I = parser["include-path"];
     // .size() and .count() return the number of arguments given. Without .multi(), their return value would always be <= 1.
     std::cout << "include paths (" << I.size() << "):\n";
     // Here, the non-template .begin() / .end() methods are being used. Their value type is po::value,
     // which is not a value in itself but contains the desired values as members, i.e. i.string.
-    for( auto&& i : I )
+    for(auto&& i : I)
         std::cout << '\t' << i.string << '\n';
 }
 ```
@@ -180,49 +180,49 @@ Note that, in order to pass arguments starting with a hyphen to the unnamed para
 #include <ProgramOptions.hxx>
 #include <iostream>
 
-int main( int argc, char** argv ) {
+int main(int argc, char** argv) {
     po::parser parser;
-    parser[ "optimization" ]
-        .abbreviation( 'O' )
-        .description( "set the optimization level (default: -O0)" )
-        .type( po::u32 )
-        .fallback( 0 );
+    parser["optimization"]
+        .abbreviation('O')
+        .description("set the optimization level (default: -O0)")
+        .type(po::u32)
+        .fallback(0);
 
-    parser[ "include-path" ]
-        .abbreviation( 'I' )
-        .description( "add an include path" )
-        .type( po::string )
+    parser["include-path"]
+        .abbreviation('I')
+        .description("add an include path")
+        .type(po::string)
         .multi();
 
-    parser[ "help" ]            // corresponds to --help
-        .abbreviation( '?' )    // corresponds to -?
-        .description( "print this help screen" )
-        .callback( [ & ]{ std::cout << parser << '\n'; } );
-                                // callbacks get invoked when the option occurs
+    parser["help"]            // corresponds to --help
+        .abbreviation('?')    // corresponds to -?
+        .description("print this help screen")
+        .callback([&]{ std::cout << parser << '\n'; });
+                              // callbacks get invoked when the option occurs
 
-    parser[ "" ]                // the unnamed parameter is used for non-option arguments, i.e. gcc a.c b.c
-        // .type( po::string )  // redundant; default for the unnamed parameter
-        // .multi()             // redundant; default for the unnamed parameter
-        .callback( [ & ]( std::string const& x ){ std::cout << "processed \'" << x << "\' successfully!\n"; } );
-                                // as .get_type() == po::string, the callback may take an std::string
+    parser[""]                // the unnamed parameter is used for non-option arguments, i.e. gcc a.c b.c
+        // .type(po::string)  // redundant; default for the unnamed parameter
+        // .multi()           // redundant; default for the unnamed parameter
+        .callback([&](std::string const& x){ std::cout << "processed \'" << x << "\' successfully!\n"; });
+                              // as .get_type() == po::string, the callback may take an std::string
 
     // parsing returns false if at least one error has occurred
-    if( !parser( argc, argv ) ) {
+    if(!parser(argc, argv)) {
         std::cerr << "errors occurred; aborting\n";
         return -1;
     }
     // we don't want to print anything else if the help screen has been displayed
-    if( parser[ "help" ].size() )
+    if(parser["help"].size())
         return 0;
 
-    std::cout << "processed files: " << parser[ "" ].size() << '\n';
+    std::cout << "processed files: " << parser[""].size() << '\n';
 
-    auto&& O = parser[ "optimization" ];
-    std::cout << "optimization level (" << ( O.was_set() ? "manual" : "auto" ) << ") = " << O.get().u32 << '\n';
+    auto&& O = parser["optimization"];
+    std::cout << "optimization level (" << (O.was_set() ? "manual" : "auto") << ") = " << O.get().u32 << '\n';
 
-    auto&& I = parser[ "include-path" ];
+    auto&& I = parser["include-path"];
     std::cout << "include paths (" << I.size() << "):\n";
-    for( auto&& i : I )
+    for(auto&& i : I)
         std::cout << '\t' << i.string << '\n';
 }
 ```
@@ -269,63 +269,63 @@ In this example, we will employ already known mechanics but lay the focus on the
 
 #### Reading `.multi()` options:
 - `.begin()` and `.end()`: Random-access iterators that point to `po::value`s; thus you have to choose the right member when dereferencing, e.g. `.begin()->i32`
-- `.begin< po::i32 >()` and `.end< po::i32 >()`: Random-access iterators that point to values of the specified type
-- `.get( i )` (and `.size()`): Reference to `po::value`; there's also a `.get_or( i, v )` method, returning the second parameter if the index is out of range
-- `.to_vector< po::i32 >()`: Returns a `std::vector` with elements of the specified type
+- `.begin<po::i32>()` and `.end<po::i32>()`: Random-access iterators that point to values of the specified type
+- `.get(i)` (and `.size()`): Reference to `po::value`; there's also a `.get_or(i, v)` method, returning the second parameter if the index is out of range
+- `.to_vector<po::i32>()`: Returns a `std::vector` with elements of the specified type
 
 ```cpp
 #include <ProgramOptions.hxx>
 #include <iostream>
 #include <numeric>
 
-int main( int argc, char** argv ) {
+int main(int argc, char** argv) {
     po::parser parser;
 
-    auto&& x = parser[ "" ]
-        .type( po::f64 )            // expects 64-bit floating point numbers
-        .multi()                    // allows multiple arguments
-        .fallback( -8, "+.5e2" )    // if no arguments were provided, assume these as default
-        .callback( [ & ]{ std::cout << "successfully parsed "; } )
-        .callback( [ & ]( std::string const& x ){ std::cout << x; } )
-        .callback( [ & ]{ std::cout << " which equals "; } )
-        .callback( [ & ]( po::f64_t x ){ std::cout << x << '\n'; } );
+    auto&& x = parser[""]
+        .type(po::f64)            // expects 64-bit floating point numbers
+        .multi()                  // allows multiple arguments
+        .fallback(-8, "+.5e2")    // if no arguments were provided, assume these as default
+        .callback([&]{ std::cout << "successfully parsed "; })
+        .callback([&](std::string const& x){ std::cout << x; })
+        .callback([&]{ std::cout << " which equals "; })
+        .callback([&](po::f64_t x){ std::cout << x << '\n'; });
 
-    parser( argc, argv );
+    parser(argc, argv);
 
-    std::cout << "( + ";
-    for( auto&& i : x.to_vector< po::f64 >() )  // unnecessary copy; for demonstration purposes only
+    std::cout << "(+ ";
+    for(auto&& i : x.to_vector<po::f64>())  // unnecessary copy; for demonstration purposes only
         std::cout << i << ' ';
-    std::cout << ") = " << std::accumulate( x.begin< po::f64 >(), x.end< po::f64 >(), po::f64_t{} ) << '\n';
+    std::cout << ") = " << std::accumulate(x.begin<po::f64>(), x.end<po::f64>(), po::f64_t{}) << '\n';
 }
 ```
 In action:
 ```
 $ ./sum
-( + -8 50 ) = 42
+(+ -8 50) = 42
 $ ./sum 39.5 2.5
 successfully parsed 39.5 which equals 39.5
 successfully parsed 2.5 which equals 2.5
-( + 39.5 2.5 ) = 42
+(+ 39.5 2.5) = 42
 $ ./sum 1e3 -1e0 -1e1 -2e2
 successfully parsed 1e3 which equals 1000
 successfully parsed -1e0 which equals -1
 successfully parsed -1e1 which equals -10
 successfully parsed -2e2 which equals -200
-( + 1000 -1 -10 -200 ) = 789
+(+ 1000 -1 -10 -200) = 789
 $ ./sum inf -1
 successfully parsed inf which equals inf
 successfully parsed -1 which equals -1
-( + inf -1 ) = inf
+(+ inf -1) = inf
 $ ./sum 12 NaN
 successfully parsed 12 which equals 12
 successfully parsed NaN which equals nan
-( + 12 nan ) = nan
+(+ 12 nan) = nan
 ```
 
 ### Example 5 (`bind`)
 Until now, we defined the type, plurality and fallback value of each option manually by invoking `.type`, `.single`/`.multi` and `.fallback`. If we just want to extract the values from the parser and store them in a variable, `.bind` offers a more convenient and safer way of achieving this and ought to be preferred. `.bind` internally sets the type and the plurality (`.single`/`.multi`) of the corresponding option (but not the fallback).
 
-We may bind options to variables of type `std::string`, to 32- or 64-bit signed integers, unsigned integer, floating point numbers or to STL containers consisting of elements of such type. If we want to use custom container types and/or custom insertion routines, we have to use `.bind_container( container&, inserter )` which accepts a binary function with the signature `inserter( container_t&, container_t::value_type const& )` (up to implicit conversion).
+We may bind options to variables of type `std::string`, to 32- or 64-bit signed integers, unsigned integer, floating point numbers or to STL containers consisting of elements of such type. If we want to use custom container types and/or custom insertion routines, we have to use `.bind_container(container&, inserter)` which accepts a binary function with the signature `inserter(container_t&, container_t::value_type const&)` (up to implicit conversion).
 
 ```cpp
 #include <ProgramOptions.hxx>
@@ -335,35 +335,35 @@ We may bind options to variables of type `std::string`, to 32- or 64-bit signed 
 #include <deque>
 #include <iostream>
 
-int main( int argc, char** argv ) {
+int main(int argc, char** argv) {
     po::parser parser;
 
     std::uint32_t optimization = 0; // the value we set here acts as an implicit fallback
-    parser[ "optimization" ]
-        .abbreviation( 'O' )
-        .description( "set the optimization level (default: -O0)" )
-        .bind( optimization );      // write the parsed value to the variable 'optimization'
-                                    // .bind( optimization ) automatically calls .type( po::u32 ) and .single()
+    parser["optimization"]
+        .abbreviation('O')
+        .description("set the optimization level (default: -O0)")
+        .bind(optimization);        // write the parsed value to the variable 'optimization'
+                                    // .bind(optimization) automatically calls .type(po::u32) and .single()
 
-    std::vector< std::string > include_paths;
-    parser[ "include-path" ]
-        .abbreviation( 'I' )
-        .description( "add an include path" )
-        .bind( include_paths );     // append paths to the vector 'include_paths'
+    std::vector<std::string> include_paths;
+    parser["include-path"]
+        .abbreviation('I')
+        .description("add an include path")
+        .bind(include_paths);       // append paths to the vector 'include_paths'
 
-    parser[ "help" ]
-        .abbreviation( '?' )
-        .description( "print this help screen" );
+    parser["help"]
+        .abbreviation('?')
+        .description("print this help screen");
 
-    std::deque< std::string > files;
-    parser[ "" ]
-        .bind( files );             // append paths to the deque 'include_paths
+    std::deque<std::string> files;
+    parser[""]
+        .bind(files);               // append paths to the deque 'include_paths
 
-    if( !parser( argc, argv ) )
+    if(!parser(argc, argv))
         return -1;
 
     // we don't want to print anything else if the help screen has been displayed
-    if( parser[ "help" ].was_set() ) {
+    if(parser["help"].was_set()) {
         std::cout << parser << '\n';
         return 0;
     }
@@ -372,10 +372,10 @@ int main( int argc, char** argv ) {
     // note that we don't need to access parser anymore; all data is stored in the bound variables
     std::cout << "optimization level = " << optimization << '\n';
     std::cout << "include files (" << files.size() << "):\n";
-    for( auto&& i : files )
+    for(auto&& i : files)
         std::cout << '\t' << i << '\n';
     std::cout << "include paths (" << include_paths.size() << "):\n";
-    for( auto&& i : include_paths )
+    for(auto&& i : include_paths)
         std::cout << '\t' << i << '\n';
 }
 ```
