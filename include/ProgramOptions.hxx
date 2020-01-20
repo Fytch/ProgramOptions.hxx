@@ -31,28 +31,25 @@
 #include <sstream>
 #include <iostream>
 
-#ifndef PROGRAMOPTIONS_NO_EXCEPTIONS
-	#include <stdexcept>
-#endif // !PROGRAMOPTIONS_NO_EXCEPTIONS
-
 #ifndef NDEBUG
 	#define PROGRAMOPTIONS_DEBUG
 #endif // !NDEBUG
 
 #undef PROGRAMOPTIONS_ASSERT
-#ifdef NDEBUG
-	#define PROGRAMOPTIONS_ASSERT(Expression, Message)
-#else // NDEBUG
-	#ifdef PROGRAMOPTIONS_NO_EXCEPTIONS
-		#define PROGRAMOPTIONS_ASSERT(Expression, Message) assert((Expression) && Message);
-	#else // PROGRAMOPTIONS_NO_EXCEPTIONS
-		#define PROGRAMOPTIONS_ASSERT(Expression, Message)\
-			do {\
-				if(!(Expression))\
-					throw std::logic_error{ ("ProgramOptions.hxx:" + std::to_string(__LINE__) + ": ") + (Message) };\
-			} while(0)
-	#endif // PROGRAMOPTIONS_NO_EXCEPTIONS
-#endif // NDEBUG
+#ifdef PROGRAMOPTIONS_EXCEPTIONS
+	#include <stdexcept>
+	#define PROGRAMOPTIONS_ASSERT(Expression, Message)\
+		do {\
+			if(!(Expression))\
+				throw std::logic_error{ ("ProgramOptions.hxx:" + std::to_string(__LINE__) + ": ") + (Message) };\
+		} while(0)
+#else // PROGRAMOPTIONS_EXCEPTIONS
+	#ifdef PROGRAMOPTIONS_DEBUG
+		#define PROGRAMOPTIONS_ASSERT(Expression, Message) assert(Message && (Expression));
+	#else // PROGRAMOPTIONS_DEBUG
+		#define PROGRAMOPTIONS_ASSERT(Expression, Message)
+	#endif // PROGRAMOPTIONS_DEBUG
+#endif // PROGRAMOPTIONS_EXCEPTIONS
 
 #if defined(PROGRAMOPTIONS_WINDOWS) && defined(PROGRAMOPTIONS_ANSI)
 	#error Please define either PROGRAMOPTIONS_WINDOWS or PROGRAMOPTIONS_ANSI

@@ -1,6 +1,7 @@
 #ifndef arg_provider_hxx_included
 #define arg_provider_hxx_included
 
+#define PROGRAMOPTIONS_EXCEPTIONS
 #include <ProgramOptions.hxx>
 #include <vector>
 #include <iterator>

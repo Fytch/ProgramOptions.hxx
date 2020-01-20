@@ -1,6 +1,5 @@
 #include <catch2/catch.hpp>
-#undef NDEBUG
-#undef PROGRAMOPTIONS_NO_EXCEPTIONS
+#define PROGRAMOPTIONS_EXCEPTIONS
 #include <ProgramOptions.hxx>
 #include "arg_provider.hxx"
 #include <stdexcept>

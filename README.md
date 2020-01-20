@@ -28,13 +28,13 @@ It is highly recommended that you at least briefly skim through the chapters [**
 The quickest way to get started is to download *ProgramOptions.hxx* as well as one of the samples and go from there.
 
 ### `sample.cxx`
-The default choice. Using *ProgramOptions.hxx* incorrectly or failing to meet a function's preconditions will throw an exception which will, by default, terminate the program and display a useful message, explaining where exactly things went wrong.
+The default choice. Incorrect usage of *ProgramOptions.hxx*'s API will trigger an assertion which will crash the program in debug mode.
 
-### `sample_noexcept.cxx`
-Using this sample is only recommended if you are already somewhat familiar with *ProgramOptions.hxx*. Incorrect programs will crash without any messages unless your STL implementation does so when [`assert`ions](http://en.cppreference.com/w/cpp/error/assert) fail.
+### `sample_exceptions.cxx`
+In this sample, we [`#define PROGRAMOPTIONS_EXCEPTIONS`](#define-programoptions_exceptions). In consequence, incorrect usage of *ProgramOptions.hxx*'s API will throw an exception both in debug and release mode.
 
 ## Design goals
-- **Non-intrusive**. Unlike other program option libraries, such as [*Boost.Program_options*](http://www.boost.org/doc/libs/1_63_0/doc/html/program_options.html), *ProgramOptions.hxx* requires neither additional library binaries nor integration into the build process. Just drop in the header, include it and you're all set. *ProgramOptions.hxx* doesn't force you to enable exceptions or RTTI and runs just fine with `-fno-rtti -fno-exceptions` (the latter requires you to [`#define PROGRAMOPTIONS_NO_EXCEPTIONS`](#define-programoptions_no_exceptions) prior to including the header, though).
+- **Non-intrusive**. Unlike other program option libraries, such as [*Boost.Program_options*](http://www.boost.org/doc/libs/1_63_0/doc/html/program_options.html), *ProgramOptions.hxx* requires neither additional library binaries nor integration into the build process. Just drop in the header, include it and you're all set. *ProgramOptions.hxx* doesn't force you to enable exceptions or RTTI and runs just fine with `-fno-rtti -fno-exceptions`.
 - **Intuitive**. *ProgramOptions.hxx* is designed to feel smooth and blend in well with other modern C++11 code.
 - **Correct**. Extensive unit tests and runtime checks contribute to more correct software, both on the side of the user and the developer of *ProgramOptions.hxx*.
 - **Permissive**. The [MIT License](https://tldrlegal.com/license/mit-license) under which *ProgramOptions.hxx* is published grants unrestricted freedom.
@@ -84,6 +84,11 @@ add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/third_party/ProgramOptions.hxx")
 target_link_libraries(YourExecutable ProgramOptionsHxx)
 ```
 You must replace ```/third_party/ProgramOptions.hxx``` by the correct path and ```YourExecutable``` by the targets that use *ProgramOptions.hxx*.
+
+You can then include the header by writing:
+```cpp
+#include <ProgramOptions.hxx>
+```
 
 ## Usage
 Using *ProgramOptions.hxx* is straightforward; we'll explain it by means of practical examples. All examples shown here and more can be found in the [/examples](examples) directory, all of which are well-documented.
@@ -399,22 +404,22 @@ This small table helps clarifying the defaults for the different kinds of option
 |`.single` / `.multi` |`.single`            |`.single`            |`.multi`             |
 
 ## Flags
-All flags have to be `#define`d before including *ProgramOptions.hxx*. Different translation units may include *ProgramOptions.hxx* using different flags.
+All flags have to be `#define`d before including *ProgramOptions.hxx*.
 
-### `#define PROGRAMOPTIONS_NO_EXCEPTIONS`
-Disables all exceptions and thus allows compilation with `-fno-exceptions`. However, incorrect use of the library and unmet preconditions entail `abort()` via `assert(...)`. This flag is implied by `NDEBUG`.
+### `#define PROGRAMOPTIONS_EXCEPTIONS`
+When this flag is set, *ProgramOptions.hxx*'s functions' preconditions are validated with exceptions instead of assertions. If a precondition isn't met, an [```std::logic_error```](https://en.cppreference.com/w/cpp/error/logic_error) is thrown whose explanatory strings starts with "ProgramOptions.hxx:*N*:" where *N* is the respective line number.
 
-:exclamation: This flag must not vary across different translation units in order to not violate C++' [one definition rule (ODR)](http://en.cppreference.com/w/cpp/language/definition).
+:exclamation: This flag must not vary across different translation units of a single program in order to not violate C++' [one definition rule (ODR)](http://en.cppreference.com/w/cpp/language/definition).
 
 ### `#define NDEBUG`
-Disables all runtime checks and all exceptions. Incorrect use of the library and unmet preconditions will lead to undefined behaviour. Implies `#define PROGRAMOPTIONS_NO_EXCEPTIONS`.
+Setting this flag disables all assertions.
 
-:exclamation: This flag must not vary across different translation units in order to not violate C++' [one definition rule (ODR)](http://en.cppreference.com/w/cpp/language/definition).
+:exclamation: This flag must not vary across different translation units of a single program in order to not violate C++' [one definition rule (ODR)](http://en.cppreference.com/w/cpp/language/definition).
 
 ### `#define PROGRAMOPTIONS_NO_COLORS`
-Disables colored output. On Windows, *ProgramOptions.hxx* uses the WinAPI (i.e. [`SetConsoleTextAttribute`](https://msdn.microsoft.com/en-us/library/windows/desktop/ms686047)) to achieve colored console output whereas it uses [ANSI escape codes](http://bluesock.org/~willg/dev/ansi.html) anywhere else.
+Setting this flag disables colored output. On Windows, *ProgramOptions.hxx* uses the WinAPI (i.e. [`SetConsoleTextAttribute`](https://msdn.microsoft.com/en-us/library/windows/desktop/ms686047)) to achieve colored console output whereas it uses [ANSI escape codes](http://bluesock.org/~willg/dev/ansi.html) anywhere else.
 
-:exclamation: This flag must not vary across different translation units in order to not violate C++' [one definition rule (ODR)](http://en.cppreference.com/w/cpp/language/definition).
+:exclamation: This flag must not vary across different translation units of a single program in order to not violate C++' [one definition rule (ODR)](http://en.cppreference.com/w/cpp/language/definition).
 
 ## Third-party libraries
 - [**Catch**](https://github.com/philsquared/Catch) for unit testing.

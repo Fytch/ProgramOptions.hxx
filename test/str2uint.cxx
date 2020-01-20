@@ -1,4 +1,5 @@
 #include <catch2/catch.hpp>
+#define PROGRAMOPTIONS_EXCEPTIONS
 #include <ProgramOptions.hxx>
 #include <string>
 #include <limits>

@@ -205,12 +205,6 @@ script:
   - $CC --version
   - $CXX --version
 
-  - mkdir bin_noexcept
-  - cd bin_noexcept
-  - cmake .. $CMAKE_FLAGS -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DPROGRAMOPTIONS_BUILD_TEST=OFF -DPROGRAMOPTIONS_NO_EXCEPTIONS=ON
-  - cmake --build .
-  - cd ..
-
   - mkdir bin
   - cd bin
   - cmake .. $CMAKE_FLAGS -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX

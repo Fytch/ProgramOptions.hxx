@@ -1,7 +1,10 @@
+#define PROGRAMOPTIONS_EXCEPTIONS
 #include <ProgramOptions.hxx>
+#include <exception>
 #include <iostream>
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv)
+try {
 	po::parser parser;
 
 	auto& PLACEHOLDER = parser["PLACEHOLDER"]
@@ -29,4 +32,8 @@ int main(int argc, char** argv) {
 	if(PLACEHOLDER.available()) {
 		// do something
 	}
+} catch(std::exception const& e) {
+	std::cerr << "uncaught exception: " << e.what() << '\n';
+	std::cerr << "terminating application\n";
+	return -1;
 }
