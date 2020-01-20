@@ -5,7 +5,7 @@
 int main(int argc, char** argv) {
 	po::parser parser;
 
-	auto&& x = parser[""]		// the unnamed parameter
+	auto& x = parser[""]		// the unnamed parameter
 		.type(po::f64)			// expects 64-bit floating point numbers
 		.multi()				// allows multiple arguments
 		.fallback(-8, "+.5e2")	// if no arguments were provided, assume these as default

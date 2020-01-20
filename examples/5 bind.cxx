@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
 		.description("add an include path")
 		.bind(include_paths);		// append paths to the vector 'include_paths'
 
-	parser["help"]					// corresponds to --help
+	auto& help = parser["help"]		// corresponds to --help
 		.abbreviation('?')			// corresponds to -?
 		.description("print this help screen");
 
@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
 		return -1;
 
 	// we don't want to print anything else if the help screen has been displayed
-	if(parser["help"].was_set()) {
+	if(help.was_set()) {
 		std::cout << parser << '\n';
 		return 0;
 	}

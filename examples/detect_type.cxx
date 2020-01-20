@@ -3,7 +3,7 @@
 
 int main(int argc, char** argv) {
 	po::parser parser;
-	auto&& o = parser[""];
+	auto& o = parser[""];
 	parser(argc, argv);
 
 	po::value_type testing_order[] = { po::void_, po::u32, po::u64, po::i32, po::i64, po::f32, po::f64, po::string };

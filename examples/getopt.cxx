@@ -7,12 +7,12 @@
 int main(int argc, char** argv) {
 	po::parser parser;
 
-	auto&& a = parser["a"];
-	auto&& b = parser["b"];
-	auto&& c = parser["c"]
+	auto& a = parser["a"];
+	auto& b = parser["b"];
+	auto& c = parser["c"]
 		.type(po::string)
 		.fallback("(null)");
-	auto&& unnamed = parser[""]
+	auto& unnamed = parser[""]
 		.type(po::string)
 		.multi();
 

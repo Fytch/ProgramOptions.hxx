@@ -3,7 +3,7 @@
 
 int main(int argc, char** argv) {
 	po::parser parser;
-	auto&& x = parser["x"];	// creates an option with name 'x'
+	auto& x = parser["x"];	// creates an option with name 'x'
 
 	parser(argc, argv);		// parses the command line arguments
 
