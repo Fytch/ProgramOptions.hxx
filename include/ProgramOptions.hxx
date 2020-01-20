@@ -252,8 +252,12 @@ namespace po {
 	// End of compatibility stuff
 
 	inline bool case_insensitive_eq(char x, char y) {
-		PROGRAMOPTIONS_ASSERT(x >= 0 && y >= 0, "case_insensitive_eq: arguments must be representable as unsigned char");
-		return x == y || std::tolower(x) == std::tolower(y);
+		if(x == y)
+			return true;
+		if(x >= 0 && y >= 0)
+			if(std::tolower(x) == std::tolower(y))
+				return true;
+		return false;
 	}
 
 	inline std::size_t damerau_levenshtein(char const* a, char const* b, std::size_t i, std::size_t j, std::size_t cutoff = std::numeric_limits<std::size_t>::max(), std::size_t distance = 0) {
