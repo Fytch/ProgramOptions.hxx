@@ -628,6 +628,10 @@ namespace po {
 	template<typename T, typename forward_iterator_t>
 	parsing_report<T> str2int(forward_iterator_t first, forward_iterator_t last) {
 		static_assert(std::numeric_limits<T>::is_integer && std::numeric_limits<T>::is_signed, "str2uint only supports signed integral types");
+		static_assert(std::numeric_limits<T>::min() == -std::numeric_limits<T>::max() - 1, "type insufficient; doesn't employ two's complement");
+
+		using unsigned_t = typename std::make_unsigned<T>::type;
+		static_assert(std::numeric_limits<unsigned_t>::max() > std::numeric_limits<T>::max(), "type insufficient");
 
 		for(; first != last && std::isspace(*first); ++first);
 		const bool neg = expect(first, last, '-');
@@ -635,14 +639,22 @@ namespace po {
 			expect(first, last, '+');
 		if(first == last || !is_digit(*first))
 			return error_code::conversion_error;
-		using unsigned_t = typename std::make_unsigned<T>::type;
 		const auto report = str2uint<unsigned_t>(first, last);
 		if(!report)
 			return report.error;
-		unsigned_t max = neg ? static_cast<unsigned_t>(-std::numeric_limits<T>::min()) : static_cast<unsigned_t>(std::numeric_limits<T>::max());
-		if(report > max)
-			return error_code::out_of_range;
-		return neg ? -static_cast<T>(report) : static_cast<T>(report);
+		if(neg) {
+			constexpr unsigned_t neg_max = static_cast<unsigned_t>(std::numeric_limits<T>::max()) + 1;
+			if(report > neg_max)
+				return error_code::out_of_range;
+			else if(report == neg_max)
+				return std::numeric_limits<T>::min();
+			else
+				return -static_cast<T>(report);
+		} else {
+			if(report > static_cast<unsigned_t>(std::numeric_limits<T>::max()))
+				return error_code::out_of_range;
+			return static_cast<T>(report);
+		}
 	}
 	template<typename T>
 	parsing_report<T> str2int(std::string const& str) {
