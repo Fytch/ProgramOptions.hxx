@@ -34,7 +34,7 @@ The default choice. Incorrect usage of *ProgramOptions.hxx*'s API will trigger a
 In this sample, we [`#define PROGRAMOPTIONS_EXCEPTIONS`](#define-programoptions_exceptions). In consequence, incorrect usage of *ProgramOptions.hxx*'s API will throw an exception both in debug and release mode.
 
 ## Design goals
-- **Non-intrusive**. Unlike other program option libraries, such as [*Boost.Program_options*](http://www.boost.org/doc/libs/1_63_0/doc/html/program_options.html), *ProgramOptions.hxx* requires neither additional library binaries nor integration into the build process. Just drop in the header, include it and you're all set. *ProgramOptions.hxx* doesn't force you to enable exceptions or RTTI and runs just fine with `-fno-rtti -fno-exceptions`.
+- **Non-intrusive**. *ProgramOptions.hxx* requires neither additional library binaries nor integration into the build process. Just drop in the header, include it and you're all set. *ProgramOptions.hxx* doesn't force you to enable exceptions or RTTI and runs just fine with `-fno-rtti -fno-exceptions`.
 - **Intuitive**. *ProgramOptions.hxx* is designed to feel smooth and blend in well with other modern C++11 code.
 - **Correct**. Extensive unit tests and runtime checks contribute to more correct software, both on the side of the user and the developer of *ProgramOptions.hxx*.
 - **Permissive**. The [MIT License](https://tldrlegal.com/license/mit-license) under which *ProgramOptions.hxx* is published grants unrestricted freedom.
