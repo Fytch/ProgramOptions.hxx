@@ -659,6 +659,7 @@ namespace po {
 		static_assert(std::numeric_limits<T>::is_iec559, "platform doesn't meet requirements");
 		static_assert(std::numeric_limits<T>::has_quiet_NaN, "type insufficient; doesn't support quiet NaNs");
 		static_assert(std::numeric_limits<T>::has_infinity, "type insufficient; doesn't support infinities");
+		using std::isinf;
 
 		for(; first != last && std::isspace(*first); ++first);
 		const bool neg = expect(first, last, '-');
@@ -692,13 +693,28 @@ namespace po {
 					expect(first, last, '+');
 				if(first == last || !is_digit(*first))
 					return error_code::conversion_error;
-				int exp{};
-				for(int d{}; first != last && (d = get_digit(*first)) >= 0; ++first)
+				int exp = 0;
+				bool exp_overflow = false;
+				for(int d{}; first != last && (d = get_digit(*first)) >= 0; ++first) {
 					exp = 10 * exp + static_cast<int>(d);
-				if(neg_exp)
-					exp = -exp;
-				result *= std::pow(T{ 10 }, exp);
+					if((exp_overflow |= (exp > std::numeric_limits<T>::max_exponent10))) {
+						for(; first != last && is_digit(*first); ++first);
+						break;
+					}
+				}
+				if(exp_overflow) {
+					if(neg_exp)
+						result = 0;
+					else
+						return error_code::out_of_range;
+				} else {
+					if(neg_exp)
+						exp = -exp;
+					result *= std::pow(T(10), exp);
+				}
 			}
+			if(isinf(result))
+				return error_code::out_of_range;
 		}
 		for(; first != last && std::isspace(*first); ++first);
 		if(first != last)
