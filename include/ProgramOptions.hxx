@@ -447,19 +447,21 @@ namespace po {
 	};
 
 	template<typename T>
-	struct parsing_report {
+	class parsing_report {
+		T m_value; // should be optional
+
+	public:
 		error_code error = error_code::none;
-		T value; // should be optional
 
 		parsing_report() = default;
 		parsing_report(error_code error)
 			: error(error) {
 		}
 		parsing_report(T const& value)
-			: value(value) {
+			: m_value(value) {
 		}
 		parsing_report(T&& value)
-			: value(std::move(value)) {
+			: m_value(std::move(value)) {
 		}
 
 		bool good() const {
@@ -471,7 +473,7 @@ namespace po {
 
 		T const& get() const {
 			PROGRAMOPTIONS_ASSERT(good(), "parsing_report: cannot access data of an erroneous report");
-			return value;
+			return m_value;
 		}
 		operator T const&() const {
 			return get();
