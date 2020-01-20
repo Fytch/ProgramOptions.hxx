@@ -41,7 +41,7 @@
 	#define PROGRAMOPTIONS_ASSERT(Expression, Message)\
 		do {\
 			if(!(Expression))\
-				throw std::logic_error{ ("ProgramOptions.hxx:" + std::to_string(__LINE__) + ": ") + (Message) };\
+				throw std::logic_error(("ProgramOptions.hxx:" + std::to_string(__LINE__) + ": ") + (Message));\
 		} while(0)
 #else // PROGRAMOPTIONS_EXCEPTIONS
 	#ifdef PROGRAMOPTIONS_DEBUG
@@ -106,7 +106,7 @@ namespace po {
 #endif // PROGRAMOPTIONS_WINDOWS
 
 		color_resetter(std::ostream& stream, color_t color)
-			: m_stream(stream) { // don't use an initializer list here because of gcc-4.8.5
+			: m_stream(stream) {
 #ifdef PROGRAMOPTIONS_WINDOWS
 			m_stream << std::flush;
 			m_console = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -211,7 +211,7 @@ namespace po {
 	// Compatibility stuff for the lack of C++14 support
 	template<typename T, typename... args_t>
 	std::unique_ptr<T> make_unique(args_t&&... args) {
-		return std::unique_ptr<T>{ new T{ std::forward<args_t>(args)... } };
+		return std::unique_ptr<T>(new T(std::forward<args_t>(args)...));
 	}
 
 	template<typename T, T... i>
@@ -291,7 +291,7 @@ namespace po {
 
 	public:
 		explicit repeat(std::size_t count, char character)
-			: m_count{ count }, m_character{ character } {
+			: m_count(count), m_character(character) {
 		}
 
 		friend std::ostream& operator<<(std::ostream& stream, repeat const& object) {
@@ -419,7 +419,7 @@ namespace po {
 	template<typename T>
 	T pow(T base, int exp) {
 		const T result = pow(base, static_cast<unsigned>(std::abs(exp)));
-		return exp >= 0 ? result : T{ 1 } / result;
+		return exp >= 0 ? result : T(1) / result;
 	}
 
 	template<typename T, unsigned i>
@@ -449,17 +449,17 @@ namespace po {
 	template<typename T>
 	struct parsing_report {
 		error_code error = error_code::none;
-		const T value{};
+		T value; // should be optional
 
 		parsing_report() = default;
 		parsing_report(error_code error)
-			: error{ error } {
+			: error(error) {
 		}
 		parsing_report(T const& value)
-			: value{ value } {
+			: value(value) {
 		}
 		parsing_report(T&& value)
-			: value{ std::move(value) } {
+			: value(std::move(value)) {
 		}
 
 		bool good() const {
@@ -523,7 +523,7 @@ namespace po {
 	}
 	template<typename forward_iterator_t, typename... args_t>
 	bool expect(forward_iterator_t& first, forward_iterator_t last, args_t&&... args) {
-		forward_iterator_t first_copy{ first };
+		forward_iterator_t first_copy(first);
 		const bool result = detail::expect_impl(first_copy, last, std::forward<args_t>(args)...);
 		if(result)
 			first = first_copy;
@@ -604,7 +604,7 @@ namespace po {
 				if(decimals >= max_decimals)
 					if(decimals > max_decimals || exp > max)
 						return error_code::out_of_range;
-				const T fac = pow(T{ 10 }, exp);
+				const T fac = pow(T(10), exp);
 				const T mant = result;
 				result *= fac;
 				if(result / fac != mant)
@@ -771,10 +771,10 @@ namespace po {
 
 		value() = default;
 		explicit value(string_t const& object)
-			: string{ object } {
+			: string(object) {
 		}
 		explicit value(string_t&& object)
-			: string{ std::move(object) } {
+			: string(std::move(object)) {
 		}
 	};
 
@@ -906,7 +906,7 @@ namespace po {
 	public:
 		template<typename... args_t>
 		explicit callback_storage(args_t&&... args)
-			: m_invocable{ std::forward<args_t>(args)... } {
+			: m_invocable(std::forward<args_t>(args)...) {
 		}
 	};
 
@@ -1116,7 +1116,7 @@ namespace po {
 		value_iterator() {
 		}
 		explicit value_iterator(underlying_t const& underlying)
-			: m_underlying{ underlying } {
+			: m_underlying(underlying) {
 		}
 
 		reference operator*() const {
@@ -1150,7 +1150,7 @@ namespace po {
 			return *this;
 		}
 		value_iterator operator++(int) {
-			value_iterator result{ *this };
+			value_iterator result(*this);
 			++*this;
 			return result;
 		}
@@ -1159,7 +1159,7 @@ namespace po {
 			return *this;
 		}
 		value_iterator operator--(int) {
-			value_iterator result{ *this };
+			value_iterator result(*this);
 			--*this;
 			return result;
 		}
@@ -1339,7 +1339,7 @@ namespace po {
 			return result;
 		}
 		parsing_report<value> make_value(std::string const& str) const {
-			return make_value(std::string{ str });
+			return make_value(std::string(str));
 		}
 		template<typename T>
 		parsing_report<value> make_value(T const& integer, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr) const {
@@ -1468,7 +1468,7 @@ namespace po {
 			return begin();
 		}
 		reverse_iterator rbegin() const {
-			return reverse_iterator{ end() };
+			return reverse_iterator(end());
 		}
 		const_reverse_iterator crbegin() const {
 			return rbegin();
@@ -1484,7 +1484,7 @@ namespace po {
 			return end();
 		}
 		reverse_iterator rend() const {
-			return reverse_iterator{ begin() };
+			return reverse_iterator(begin());
 		}
 		const_reverse_iterator crend() const {
 			return rend();
@@ -1493,7 +1493,7 @@ namespace po {
 		template<value_type type>
 		value_iterator<type, iterator> begin() const {
 			assert_iterator_type<type>();
-			return value_iterator<type, iterator>{ begin() };
+			return value_iterator<type, iterator>(begin());
 		}
 		template<value_type type>
 		value_iterator<type, iterator> cbegin() const {
@@ -1501,7 +1501,7 @@ namespace po {
 		}
 		template<value_type type>
 		std::reverse_iterator<value_iterator<type, iterator>> rbegin() const {
-			return std::reverse_iterator<value_iterator<type, iterator>>{ end<type>() };
+			return std::reverse_iterator<value_iterator<type, iterator>>(end<type>());
 		}
 		template<value_type type>
 		std::reverse_iterator<value_iterator<type, iterator>> crbegin() const {
@@ -1511,7 +1511,7 @@ namespace po {
 		template<value_type type>
 		value_iterator<type, iterator> end() const {
 			assert_iterator_type<type>();
-			return value_iterator<type, iterator>{ end() };
+			return value_iterator<type, iterator>(end());
 		}
 		template<value_type type>
 		value_iterator<type, iterator> cend() const {
@@ -1519,7 +1519,7 @@ namespace po {
 		}
 		template<value_type type>
 		std::reverse_iterator<value_iterator<type, iterator>> rend() const {
-			return std::reverse_iterator<value_iterator<type, iterator>>{ begin<type>() };
+			return std::reverse_iterator<value_iterator<type, iterator>>(begin<type>());
 		}
 		template<value_type type>
 		std::reverse_iterator<value_iterator<type, iterator>> crend() const {
@@ -2005,7 +2005,7 @@ namespace po {
 						<< error()
 						<< "unexpected character \'" << argv[i][j] << "\'"
 						<< ignoring(argv[i])
-						<< suggest(std::string{ &argv[i][0], &argv[i][j] } + "=" + std::string{ &argv[i][j] }) << '\n';
+						<< suggest(std::string(&argv[i][0], &argv[i][j]) + "=" + &argv[i][j]) << '\n';
 				return false;
 			}
 			return parse_argument(option, std::move(expression), argument);
@@ -2093,7 +2093,7 @@ namespace po {
 									*m_output_destination << '\n';
 								}
 							} else {
-								const auto opt = m_options.find(std::string{ first, last });
+								const auto opt = m_options.find(std::string(first, last));
 								if(opt == m_options.end()) {
 									good = false;
 									if(is_verbose()) {
@@ -2192,7 +2192,7 @@ namespace po {
 
 	public:
 		option& operator[](std::string const& designator) {
-			return operator_brackets_helper(std::string{ designator });
+			return operator_brackets_helper(std::string(designator));
 		}
 		option& operator[](std::string&& designator) {
 			return operator_brackets_helper(std::move(designator));
@@ -2250,26 +2250,26 @@ namespace po {
 				auto& opt = **iter;
 				if(opt.first.empty())
 					continue;
-				stream << repeat{ left_padding, ' ' };
+				stream << repeat(left_padding, ' ');
 				const char abbreviation = opt.second.get_abbreviation();
 				const bool verbose = opt.first.size() > 1;
 				if(abbreviation)
 					stream << white << '-' << abbreviation;
 				else
-					stream << repeat{ abbreviation_width, ' ' };
+					stream << repeat(abbreviation_width, ' ');
 				if(abbreviation && verbose)
 					stream << ',' << ' ';
 				else
-					stream << repeat{ separator_width, ' ' };
+					stream << repeat(separator_width, ' ');
 				if(verbose) {
 					stream << white << '-' << '-' << opt.first;
 					const int rem = static_cast<int>(verbose_width) - 2 - static_cast<int>(opt.first.size());
 					if(rem >= 0)
-						stream << repeat{ static_cast<std::size_t>(rem) + mid_padding, ' ' };
+						stream << repeat(static_cast<std::size_t>(rem) + mid_padding, ' ');
 					else
-						stream << '\n' << repeat{ description_start, ' ' };
+						stream << '\n' << repeat(description_start, ' ');
 				} else {
-					stream << repeat{ verbose_width + mid_padding, ' ' };
+					stream << repeat(verbose_width + mid_padding, ' ');
 				}
 				std::size_t carriage = description_start;
 				std::string const& descr = opt.second.get_description();
@@ -2287,7 +2287,7 @@ namespace po {
 					}
 					if(descr[i] == '\n' || last) {
 						carriage = description_start + paragraph_indenture;
-						stream << '\n' << repeat{ carriage, ' ' };
+						stream << '\n' << repeat(carriage, ' ');
 						if(std::isblank(descr[i + 1]))
 							++i;
 					} else {

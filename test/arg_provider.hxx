@@ -21,7 +21,7 @@ public:
 	}
 	template<typename... args_t>
 	explicit arg_provider(args_t&&... args)
-		: arg_provider{ po::make_index_sequence<sizeof...(args_t)>{}, std::forward<args_t>(args)... } {
+		: arg_provider(po::make_index_sequence<sizeof...(args_t)>{}, std::forward<args_t>(args)...) {
 	}
 };
 
