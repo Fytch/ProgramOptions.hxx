@@ -10,6 +10,7 @@
 - [Features](#features)
   - [Syntax](#syntax)
 - [Integration](#integration)
+- [TL;DR](#tldr)
 - [Usage](#usage)
   - [Example 1 (`abbreviation`, `u32`, `available`, `get`)](#example-1-abbreviation-u32-available-get)
   - [Example 2 (`fallback`, `was_set`, `string`, `multi`)](#example-2-fallback-was_set-string-multi)
@@ -23,9 +24,7 @@
 - [License](#license)
 
 ## Getting started
-It is highly recommended that you at least briefly skim through the chapters [**Integration**](#integration) and [**Usage**](#usage) before starting.
-
-The quickest way to get started is to download *ProgramOptions.hxx* as well as one of the samples and go from there.
+The quickest way to get started is to [download](https://github.com/Fytch/ProgramOptions.hxx/releases/download/v1.0.0/ProgramOptions.hxx) *ProgramOptions.hxx* as well as one of the samples and go from there.
 
 ### `sample.cxx`
 The default choice. Incorrect usage of *ProgramOptions.hxx*'s API will trigger an assertion which will crash the program in debug mode.
@@ -88,6 +87,43 @@ You must replace ```/third_party/ProgramOptions.hxx``` by the correct path and `
 You can then include the header by writing:
 ```cpp
 #include <ProgramOptions.hxx>
+```
+
+## TL;DR
+Copy and paste this and start hacking:
+```cpp
+#include <ProgramOptions.hxx>
+#include <iostream>
+#include <vector>
+#include <string>
+
+int main(int argc, char** argv) {
+    po::parser parser;
+
+    std::uint32_t opt = 0;
+    parser["optimization"]
+        .abbreviation('O')
+        .description("set the optimzation level")
+        .bind(opt);
+
+    auto& help = parser["help"]
+        .abbreviation('?')
+        .description("print this help screen");
+
+    std::vector<std::string> files;
+    parser[""]
+        .bind(files);
+
+    if(!parser(argc, argv))
+        return -1;
+
+    if(help.was_set()) {
+        std::cout << parser << '\n';
+        return 0;
+    }
+
+    std::cout << "compiling " << files.size() << " files with O" << opt << '\n';
+}
 ```
 
 ## Usage
