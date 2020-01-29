@@ -15,6 +15,12 @@ try {
 		.fallback(PLACEHOLDER)
 		.callback([&]{ PLACEHOLDER; });
 
+	std::uint32_t PLACEHOLDER;
+	auto& PLACEHOLDER = parser["PLACEHOLDER"]
+		.abbreviation('PLACEHOLDER')
+		.description("PLACEHOLDER")
+		.bind(PLACEHOLDER);
+
 	auto& help = parser["help"]
 		.abbreviation('?')
 		.description("print this help screen");
