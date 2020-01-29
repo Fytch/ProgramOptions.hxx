@@ -36,7 +36,7 @@ if(PROGRAMOPTIONS_NOT_SUBPROJECT)
 	endif()
 
 	if(PROGRAMOPTIONS_BUILD_TEST)
-		add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/ext/Catch2")
+		add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/third_party/Catch2")
 
 		file(GLOB_RECURSE test_src test/*.cxx)
 		add_executable(Test ${test_src})
