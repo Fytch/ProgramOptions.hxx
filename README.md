@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
     std::uint32_t opt = 0;
     parser["optimization"]
         .abbreviation('O')
-        .description("set the optimzation level")
+        .description("set the optimization level")
         .bind(opt);
 
     auto& help = parser["help"]
