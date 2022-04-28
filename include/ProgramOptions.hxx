@@ -256,10 +256,9 @@ namespace po {
 			return true;
 #ifndef __CHAR_UNSIGNED__
 		if(x >= 0 && y >= 0)
-#else
+#endif
 			if(std::tolower(x) == std::tolower(y))
 				return true;
-#endif
 		return false;
 	}
 
