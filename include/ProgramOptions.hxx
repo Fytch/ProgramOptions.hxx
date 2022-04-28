@@ -254,9 +254,12 @@ namespace po {
 	inline bool case_insensitive_eq(char x, char y) {
 		if(x == y)
 			return true;
+#ifndef __CHAR_UNSIGNED__
 		if(x >= 0 && y >= 0)
+#else
 			if(std::tolower(x) == std::tolower(y))
 				return true;
+#endif
 		return false;
 	}
 
